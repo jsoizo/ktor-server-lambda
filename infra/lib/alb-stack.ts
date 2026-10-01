@@ -10,9 +10,9 @@ import { sampleFunction, Variant } from "./sample-function";
  * Kept in its own stack because an ALB is billed while it exists; destroy it after trying.
  */
 export class AlbStack extends Stack {
-  constructor(scope: Construct, id: string, variant: Variant, props?: StackProps) {
+  constructor(scope: Construct, id: string, variant: Variant, reservedConcurrency?: number, props?: StackProps) {
     super(scope, id, props);
-    const fn = sampleFunction(this, "Function", variant);
+    const fn = sampleFunction(this, "Function", variant, reservedConcurrency);
     const vpc = new ec2.Vpc(this, "Vpc", {
       maxAzs: 2,
       natGateways: 0,

@@ -11,9 +11,9 @@ const throttle = { throttlingRateLimit: 10, throttlingBurstLimit: 20 };
 
 /** One function behind a REST API, HTTP APIs with payload 2.0 and 1.0, and a Function URL. */
 export class HttpStack extends Stack {
-  constructor(scope: Construct, id: string, variant: Variant, props?: StackProps) {
+  constructor(scope: Construct, id: string, variant: Variant, reservedConcurrency?: number, props?: StackProps) {
     super(scope, id, props);
-    const fn = sampleFunction(this, "Function", variant);
+    const fn = sampleFunction(this, "Function", variant, reservedConcurrency);
 
     const rest = new apigateway.LambdaRestApi(this, "RestApi", {
       handler: fn,

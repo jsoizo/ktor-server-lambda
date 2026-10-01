@@ -15,12 +15,23 @@ const samples = path.join(__dirname, "..", "..", "samples");
  * The sample application as a Lambda function, built beforehand with Gradle (see infra/README.md).
  * For jvm-managed it returns an alias, because SnapStart only applies to invocations of a published version.
  */
-export function sampleFunction(scope: Construct, id: string, variant: Variant): lambda.IFunction {
+export function sampleFunction(
+  scope: Construct,
+  id: string,
+  variant: Variant,
+  reservedConcurrentExecutions?: number,
+): lambda.IFunction {
   const logGroup = new logs.LogGroup(scope, `${id}Logs`, {
     retention: logs.RetentionDays.ONE_WEEK,
     removalPolicy: RemovalPolicy.DESTROY,
   });
-  const common = { architecture: lambda.Architecture.ARM_64, memorySize: 512, timeout: Duration.seconds(10), logGroup };
+  const common = {
+    architecture: lambda.Architecture.ARM_64,
+    memorySize: 512,
+    timeout: Duration.seconds(10),
+    logGroup,
+    reservedConcurrentExecutions,
+  };
   switch (variant) {
     case "native":
       return new lambda.Function(scope, id, {

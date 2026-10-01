@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 private class Recorder {
     val primed = mutableListOf<String>()
@@ -31,6 +32,11 @@ private fun Application.testModule(recorder: Recorder) {
         get("/hello") {
             val invocation = call.lambda.invocation
             call.respondText("${invocation.requestId} ${invocation.traceId} ${invocation.invokedFunctionArn}")
+        }
+        get("/deadline") { call.respondText(call.lambda.invocation.deadlineEpochMillis.toString()) }
+        get("/broken") {
+            recorder.primed += "broken"
+            error("priming must survive this")
         }
         get("/health") {
             recorder.primed += "GET ${call.request.queryParameters["deep"]}"
@@ -43,9 +49,14 @@ private fun Application.testModule(recorder: Recorder) {
     }
 }
 
-private class TestHandler(val recorder: Recorder = Recorder()) : KtorRequestStreamHandler({ testModule(recorder) }) {
-    override val primingRequests
-        get() = listOf(PrimingRequest.get("/health?deep=true"), PrimingRequest.postJson("/warm", """{"a":1}"""))
+private class TestHandler(
+    val recorder: Recorder = Recorder(),
+    private val priming: List<PrimingRequest> = listOf(
+        PrimingRequest.get("/health?deep=true"),
+        PrimingRequest.postJson("/warm", """{"a":1}"""),
+    ),
+) : KtorRequestStreamHandler({ testModule(recorder) }) {
+    override val primingRequests get() = priming
 
     fun prime() = beforeCheckpoint(NoopCracContext)
 }
@@ -71,8 +82,35 @@ class KtorRequestStreamHandlerTest {
         assertEquals(listOf("GET true", """POST {"a":1}"""), handler.recorder.primed)
     }
 
-    private fun invoke(handler: TestHandler, input: String) = ByteArrayOutputStream().let { output ->
-        handler.handleRequest(ByteArrayInputStream(input.encodeToByteArray()), output, FakeContext)
+    @Test
+    fun failingPrimingRequestDoesNotFailTheSnapshot() {
+        // ErrorMode.HttpResponse turns the exception into a 500, which priming only logs.
+        val handler =
+            TestHandler(priming = listOf(PrimingRequest.get("/broken"), PrimingRequest.get("/missing"), PrimingRequest.get("/health")))
+        handler.prime()
+        assertEquals(listOf("broken", "GET null"), handler.recorder.primed)
+    }
+
+    @Test
+    fun deadlineComesFromTheRemainingTime() {
+        val before = System.currentTimeMillis()
+        val deadline = invoke(TestHandler(), EVENT.replace("/hello", "/deadline"))["body"]!!.jsonPrimitive.content.toLong()
+        assertTrue(deadline in before + 30_000..System.currentTimeMillis() + 30_000)
+    }
+
+    @Test
+    fun fallsBackToTheTracePropertyWhenContextHasNoTraceId() {
+        System.setProperty("com.amazonaws.xray.traceHeader", "Root=1-property")
+        try {
+            val json = invoke(TestHandler(), EVENT, FakeContext(traceId = null))
+            assertEquals("req-9 Root=1-property arn:aws:lambda:us-east-1:123456789012:function:f", json["body"]!!.jsonPrimitive.content)
+        } finally {
+            System.clearProperty("com.amazonaws.xray.traceHeader")
+        }
+    }
+
+    private fun invoke(handler: TestHandler, input: String, context: Context = FakeContext()) = ByteArrayOutputStream().let { output ->
+        handler.handleRequest(ByteArrayInputStream(input.encodeToByteArray()), output, context)
         Json.parseToJsonElement(output.toString(Charsets.UTF_8)).jsonObject
     }
 
@@ -98,10 +136,10 @@ private object NoopCracContext : org.crac.Context<Resource>() {
     }
 }
 
-private object FakeContext : Context {
+private class FakeContext(private val traceId: String? = "Root=1-trace") : Context {
     override fun getAwsRequestId(): String = "req-9"
 
-    override fun getXrayTraceId(): String = "Root=1-trace"
+    override fun getXrayTraceId(): String? = traceId
 
     override fun getLogGroupName(): String = "log-group"
 

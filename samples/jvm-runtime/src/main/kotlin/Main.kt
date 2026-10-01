@@ -11,6 +11,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -39,9 +40,24 @@ fun Application.module() {
                     "query",
                     JsonObject(call.request.queryParameters.entries().associate { (k, v) -> k to JsonArray(v.map(::JsonPrimitive)) }),
                 )
-                call.lambdaOrNull?.let { put("rawEvent", it.rawEvent) }
+                call.lambdaOrNull?.let { put("rawEvent", redacted(it.rawEvent)) }
             }
             call.respondText(echo.toString(), ContentType.Application.Json)
         }
     }
+}
+
+// The echo is for checking encodings, not for leaking credentials or session cookies back to the page.
+private val secretHeaders = setOf("authorization", "cookie", "x-amz-security-token")
+
+private fun redacted(element: JsonElement): JsonElement = when (element) {
+    is JsonObject -> JsonObject(
+        element.mapValues { (name, value) ->
+            if (name.lowercase() in secretHeaders || name == "cookies") JsonPrimitive("<redacted>") else redacted(value)
+        },
+    )
+
+    is JsonArray -> JsonArray(element.map(::redacted))
+
+    else -> element
 }

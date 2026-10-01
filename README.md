@@ -91,6 +91,12 @@ Inside a route, `call.lambda` exposes the invocation (request id, deadline, trac
 
 ## Things to know about Lambda
 
+- **Error messages**: like every Ktor engine, an unhandled exception becomes a 500 whose body is the exception
+  message. Install [StatusPages](https://ktor.io/docs/server-status-pages.html) to control what clients see. With
+  `ErrorMode.LambdaError`, the message and stack trace go to the Lambda error report and logs instead.
+- **Failures after the headers are sent** (an exception inside `respondBytesWriter`, a wrong `Content-Length`) are
+  raised as invocation errors in every mode, where a socket-based engine would drop the connection.
+
 - **Binary responses on REST APIs** need `binaryMediaTypes` on the API (for example `*/*`); otherwise clients
   receive the base64 text.
 - **ALB** can only carry one value per header unless the target group enables

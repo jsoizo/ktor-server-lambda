@@ -10,5 +10,13 @@ if (!variants.includes(variant)) {
 }
 const suffix = variant.replace(/(^|-)(\w)/g, (_, __, c: string) => c.toUpperCase());
 
-new HttpStack(app, `KtorLambdaHttp${suffix}`, variant);
-new AlbStack(app, `KtorLambdaAlb${suffix}`, variant);
+// Caps the public endpoints' share of the account's concurrency; off by default because reserving any on a new
+// account, whose limit is 10, makes the deployment fail.
+const reserved = app.node.tryGetContext("reservedConcurrency");
+const reservedConcurrency = reserved === undefined ? undefined : Number(reserved);
+if (reservedConcurrency !== undefined && !(Number.isInteger(reservedConcurrency) && reservedConcurrency > 0)) {
+  throw new Error(`reservedConcurrency must be a positive integer, was "${reserved}"`);
+}
+
+new HttpStack(app, `KtorLambdaHttp${suffix}`, variant, reservedConcurrency);
+new AlbStack(app, `KtorLambdaAlb${suffix}`, variant, reservedConcurrency);

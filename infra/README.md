@@ -10,9 +10,12 @@ CDK stacks that deploy a sample behind every supported event source.
 `<Variant>` is `Native`, `JvmManaged` or `JvmRuntime`, picked with `-c variant=native|jvm-managed|jvm-runtime`
 (default `native`).
 
-**Costs.** Every endpoint is public and unauthenticated. The API Gateway stages are throttled to 10 requests per
-second, but the Function URL and the ALB are not: anyone who finds them can invoke the function as often as Lambda
-allows. The ALB stack bills hourly for the load balancer and its two
+**Costs and exposure.** Every endpoint is public and unauthenticated. The API Gateway stages are throttled to 10
+requests per second, but the Function URL and the ALB are not: anyone who finds them can invoke the function as often
+as Lambda allows, using up the account's concurrency and throttling unrelated functions in the same region. Pass
+`-c reservedConcurrency=5` to cap the function; it is off by default because reserving concurrency fails on new
+accounts, whose limit is 10. The `/echo` route redacts `Authorization`, `Cookie` and session tokens, but still shows
+the rest of the event, such as account and API ids. The ALB stack bills hourly for the load balancer and its two
 public IPv4 addresses. Destroy the stacks when you are done.
 
 ## Deploy to AWS
