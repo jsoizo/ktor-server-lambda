@@ -50,13 +50,13 @@ jobs:
           path: ~/.konan
           key: ${{ steps.konan.outputs.cache-primary-key }}
       - name: Integration test on the Lambda Runtime Interface Emulator
-        run: scripts/rie-test.sh all
+        run: ./gradlew :integration-test:integrationTest
       # The functions deploy as arm64 by default, so also start that binary, under QEMU.
       - uses: docker/setup-qemu-action@v4
         with:
           platforms: arm64
       - name: Integration test of the arm64 bootstrap
-        run: RIE_ARCH=arm64 scripts/rie-test.sh native
+        run: ./gradlew :integration-test:integrationTest -Prie.arch=arm64 --tests '*nativeBootstrap*'
       - uses: actions/setup-node@v7
         with:
           node-version: 22
@@ -73,6 +73,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: reports
-          path: |
-            **/build/reports/
-            build/rie/*.log
+          path: '**/build/reports/'
