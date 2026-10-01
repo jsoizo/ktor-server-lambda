@@ -2,6 +2,8 @@ package com.jsoizo.ktor.server.lambda.events
 
 import com.jsoizo.ktor.server.lambda.events.internal.has
 import com.jsoizo.ktor.server.lambda.events.internal.objOrNull
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 
@@ -16,6 +18,18 @@ public class DecodedEvent internal constructor(
 
 /** Entry point that picks the codec for an event and decodes it. */
 public object LambdaHttpCodecs {
+    /**
+     * Parses a raw event payload as received from Lambda.
+     *
+     * @throws InvalidEventException if [payload] is not a JSON object
+     */
+    public fun parse(payload: ByteArray): JsonObject = try {
+        Json.parseToJsonElement(payload.decodeToString()) as? JsonObject
+            ?: throw InvalidEventException("Event is not a JSON object")
+    } catch (e: SerializationException) {
+        throw InvalidEventException("Event is not valid JSON", e)
+    }
+
     /**
      * Detects the format by discriminator fields; trial deserialization into each shape misclassifies events.
      *

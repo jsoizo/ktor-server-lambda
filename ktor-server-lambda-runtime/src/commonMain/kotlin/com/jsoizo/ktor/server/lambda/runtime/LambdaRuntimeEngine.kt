@@ -3,6 +3,7 @@ package com.jsoizo.ktor.server.lambda.runtime
 import com.jsoizo.ktor.server.lambda.LambdaApplicationEngine
 import com.jsoizo.ktor.server.lambda.LambdaInvocation
 import com.jsoizo.ktor.server.lambda.events.InvalidEventException
+import com.jsoizo.ktor.server.lambda.events.LambdaHttpCodecs
 import com.jsoizo.ktor.server.lambda.events.UnsupportedEventException
 import io.ktor.events.Events
 import io.ktor.server.application.Application
@@ -24,9 +25,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlin.concurrent.Volatile
 
 /**
@@ -135,7 +133,7 @@ public class LambdaRuntimeEngine(
         // A process-wide variable cannot hold per-invocation values once invocations run concurrently.
         if (publishTrace) publishTraceId(invocation.traceId)
         return try {
-            val response = withDeadline(invocation) { handle(parse(next.event), invocation) }
+            val response = withDeadline(invocation) { handle(LambdaHttpCodecs.parse(next.event), invocation) }
             Outcome.Response(response.toString().encodeToByteArray())
         } catch (e: TimeoutCancellationException) {
             Outcome.Failure(LambdaError("Runtime.Timeout", "Invocation exceeded its deadline: ${e.message}"))
@@ -173,13 +171,6 @@ public class LambdaRuntimeEngine(
         val deadline = invocation.deadlineEpochMillis ?: return kotlinx.coroutines.coroutineScope(block)
         // Lambda Managed Instances keep running timed-out invocations, so cancel them ourselves.
         return withTimeout((deadline - currentTimeMillis()).coerceAtLeast(1), block)
-    }
-
-    private fun parse(event: ByteArray): JsonObject = try {
-        Json.parseToJsonElement(event.decodeToString()) as? JsonObject
-            ?: throw InvalidEventException("Event is not a JSON object")
-    } catch (e: SerializationException) {
-        throw InvalidEventException("Event is not valid JSON", e)
     }
 
     private fun fatal(message: String, cause: Throwable): Nothing {
