@@ -9,14 +9,15 @@ import platform.posix.CLOCK_REALTIME
 import platform.posix.clock_gettime
 import platform.posix.setenv
 import platform.posix.timespec
-import platform.posix.unsetenv
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun getenv(name: String): String? = platform.posix.getenv(name)?.toKString()
 
 @OptIn(ExperimentalForeignApi::class)
+// Overwrites instead of unsetting: setenv(overwrite = 1) on an existing name keeps the environ array in place,
+// so a concurrent getenv on another thread never reads a freed array.
 internal actual fun publishTraceId(traceId: String?) {
-    if (traceId == null) unsetenv(TRACE_VARIABLE) else setenv(TRACE_VARIABLE, traceId, 1)
+    setenv(TRACE_VARIABLE, traceId.orEmpty(), 1)
 }
 
 private const val TRACE_VARIABLE = "_X_AMZN_TRACE_ID"

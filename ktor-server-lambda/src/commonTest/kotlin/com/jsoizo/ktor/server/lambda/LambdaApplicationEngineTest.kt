@@ -5,6 +5,7 @@ import com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest
 import com.jsoizo.ktor.server.lambda.events.LambdaHttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
 import io.ktor.server.application.Application
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
@@ -18,10 +19,12 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.head
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonObject
@@ -29,6 +32,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
@@ -117,9 +121,90 @@ class LambdaApplicationEngineTest {
     }
 
     @Test
-    fun applicationExceptionBecomes500ByDefault() = runTest {
+    fun applicationExceptionBecomes500WithKtorsDefaultBody() = runTest {
+        // Ktor's own failure handling puts the message in the body, as on every engine; see the README.
         val engine = start { routing { get("/") { error("boom") } } }
-        assertEquals(500, engine.handle(request("GET", "/"), invocation).status)
+        val response = engine.handle(request("GET", "/"), invocation)
+        assertEquals(500 to "boom", response.status to response.body.decodeToString())
+    }
+
+    @Test
+    fun failureAfterHeadersAreCommittedIsRaisedInsteadOfAnEmptySuccess() = runTest {
+        val engine = start {
+            routing {
+                get("/") {
+                    call.respondBytesWriter {
+                        writeFully("partial".encodeToByteArray())
+                        error("broke mid-stream")
+                    }
+                }
+            }
+        }
+        assertFailsWith<IllegalStateException> { engine.handle(request("GET", "/"), invocation) }
+    }
+
+    @Test
+    fun contentLengthThatDoesNotMatchTheBodyIsRaised() = runTest {
+        val engine = start {
+            routing {
+                get("/") {
+                    call.respond(
+                        object : OutgoingContent.ByteArrayContent() {
+                            override val contentLength: Long = 10
+                            override fun bytes(): ByteArray = "short".encodeToByteArray()
+                        },
+                    )
+                }
+            }
+        }
+        assertFails { engine.handle(request("GET", "/"), invocation) }
+    }
+
+    @Test
+    fun collectsBodiesServedFromAReadChannel() = runTest {
+        val engine = start {
+            routing {
+                get("/") {
+                    call.respond(
+                        object : OutgoingContent.ReadChannelContent() {
+                            override fun readFrom(): ByteReadChannel = ByteReadChannel("from a channel")
+                        },
+                    )
+                }
+            }
+        }
+        assertEquals("from a channel", engine.handle(request("GET", "/"), invocation).body.decodeToString())
+    }
+
+    @Test
+    fun failingBackgroundCoroutineDoesNotBreakTheResponse() = runTest {
+        val engine = start {
+            routing {
+                get("/") {
+                    call.launch { error("background failure") }
+                    delay(50)
+                    call.respondText("still fine")
+                }
+            }
+        }
+        val response = engine.handle(request("GET", "/"), invocation)
+        assertEquals(200 to "still fine", response.status to response.body.decodeToString())
+    }
+
+    @Test
+    fun exposesConnectionDetailsFromTheEvent() = runTest {
+        val engine = start {
+            routing {
+                get("/") {
+                    val local = call.request.local
+                    call.respondText(
+                        listOf(local.scheme, local.localHost, local.localPort, local.remoteHost, local.remotePort).joinToString(" "),
+                    )
+                }
+            }
+        }
+        val http = engine.handle(request("GET", "/", host = "api.example.com", scheme = "http", port = null), invocation)
+        assertEquals("http api.example.com 80 198.51.100.7 4321", http.body.decodeToString())
     }
 
     @Test
@@ -203,16 +288,19 @@ class LambdaApplicationEngineTest {
         headers: List<Pair<String, String>> = emptyList(),
         body: String = "",
         host: String = "example.com",
+        scheme: String = "https",
+        port: Int? = 443,
     ) = LambdaHttpRequest(
         method = method,
-        scheme = "https",
-        host = "example.com",
-        port = 443,
+        scheme = scheme,
+        host = host,
+        port = port,
         path = path,
         rawQuery = rawQuery,
         headers = listOf("Host" to host) + headers,
         body = body.encodeToByteArray(),
         remoteAddress = "198.51.100.7",
+        remotePort = 4321,
         source = EventSource.ApiGatewayV2,
         isFunctionUrl = false,
         requestContext = null,

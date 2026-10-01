@@ -19,6 +19,7 @@ import io.ktor.server.engine.handleFailure
 import io.ktor.server.engine.logError
 import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.execute
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +28,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.completeWith
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.serialization.json.JsonObject
 
 /** Socketless engine that runs the Ktor pipeline once per Lambda invocation via [handle]. */
@@ -91,29 +93,39 @@ public open class LambdaApplicationEngine(
     /**
      * Runs the pipeline for an already decoded request; use this with a codec of your own.
      *
-     * Coroutines launched in the call's scope (`call.launch { }`) do not delay the response and are
-     * cancelled once it is built, because Lambda may freeze the environment as soon as it is sent.
+     * Coroutines launched in the call's scope (`call.launch { }`) never delay the response, and their failures do
+     * not affect it. They are cancelled once the response is built, because Lambda may freeze the environment as
+     * soon as it is sent; one that ignores cancellation keeps running in the background.
      *
-     * @throws Throwable the application's exception when [Configuration.errorMode] is [ErrorMode.LambdaError]
+     * @throws Throwable the application's exception when [Configuration.errorMode] is [ErrorMode.LambdaError], or
+     * in any mode when the response failed after its status and headers were committed, which a socket-based engine
+     * would surface by dropping the connection
      */
     public suspend fun handle(request: LambdaHttpRequest, invocation: LambdaInvocation): LambdaHttpResponse {
-        val parent = currentCoroutineContext()
-        // Routing hands handlers a call whose scope is the coroutine running the pipeline, so `call.launch`
-        // children belong to it. Running the pipeline in its own coroutine and waiting only for its body lets
-        // the response go out without them, as with a socket-based engine.
-        val callJob = SupervisorJob(parent[Job])
-        val callContext = parent + callJob + invocation + CoroutineExceptionHandler { _, error ->
+        val caller = currentCoroutineContext()
+        // Detached from the caller so that waiting for the response never waits for the call's coroutines;
+        // the caller's cancellation is still forwarded.
+        val callJob = SupervisorJob()
+        val forwardCancellation = caller[Job]?.invokeOnCompletion { callJob.cancel() }
+        val callContext = caller.minusKey(Job) + callJob + invocation + CoroutineExceptionHandler { _, error ->
             // Kotlin/Native terminates the process on an unhandled coroutine exception.
             environment.log.error("Unhandled exception in a coroutine launched by a call", error)
         }
         try {
             val call = LambdaApplicationCall(applicationProvider(), request, invocation, callContext)
             val executed = CompletableDeferred<Unit>()
-            CoroutineScope(callContext).launch { executed.completeWith(runCatching { pipeline.execute(call) }) }
+            // Routing gives handlers a call scoped to the coroutine running the pipeline, so `call.launch` children
+            // belong to it. supervisorScope keeps their failures away from the pipeline, and completing `executed`
+            // inside it lets the response go out before they finish.
+            CoroutineScope(callContext).launch {
+                supervisorScope { executed.completeWith(runCatching { pipeline.execute(call) }) }
+            }
             executed.await()
             call.attributes.getOrNull(ApplicationErrorKey)?.let { throw it }
+            call.response.failureAfterCommit?.let { throw it }
             return call.response.toLambdaResponse()
         } finally {
+            forwardCancellation?.dispose()
             callJob.cancel()
         }
     }
@@ -138,7 +150,16 @@ public open class LambdaApplicationEngine(
                                 handleFailure(call, error)
                             } else {
                                 logError(call, error)
-                                call.attributes.put(ApplicationErrorKey, error)
+                                // Rethrown as a CancellationException, it would read as the worker itself being cancelled.
+                                val recorded = if (error is CancellationException) {
+                                    IllegalStateException(
+                                        "The call was cancelled",
+                                        error,
+                                    )
+                                } else {
+                                    error
+                                }
+                                call.attributes.put(ApplicationErrorKey, recorded)
                             }
                         }
                     }

@@ -21,6 +21,9 @@ class FakeRuntimeApi {
 
     class Posted(val requestId: String, val kind: String, val body: String, val errorType: String?, val invocationId: String?)
 
+    /** Status for POST /response; set to 413, say, to reproduce an oversized response. */
+    var responseStatus: HttpStatusCode = HttpStatusCode.Accepted
+
     private val events = Channel<Event>(Channel.UNLIMITED)
     val posted = Channel<Posted>(Channel.UNLIMITED)
     private lateinit var server: EmbeddedServer<*, *>
@@ -47,7 +50,8 @@ class FakeRuntimeApi {
                             invocationId = call.request.header("Lambda-Runtime-Invocation-Id"),
                         ),
                     )
-                    call.respond(HttpStatusCode.Accepted)
+                    val kind = call.parameters["kind"]
+                    call.respond(if (kind == "response") responseStatus else HttpStatusCode.Accepted)
                 }
             }
         }

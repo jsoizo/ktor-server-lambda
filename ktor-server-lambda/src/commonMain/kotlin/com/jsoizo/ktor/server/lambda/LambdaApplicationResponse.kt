@@ -11,14 +11,16 @@ import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.toByteArray
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
 internal class LambdaApplicationResponse(private val lambdaCall: LambdaApplicationCall) : BaseApplicationResponse(lambdaCall) {
     private val headerList = mutableListOf<Pair<String, String>>()
-    private var body: Deferred<ByteArray>? = null
+    private var body: ByteArray? = null
+
+    /** A failure after the status and headers were committed, when no error response can replace them. */
+    var failureAfterCommit: Throwable? = null
+        private set
 
     override val headers: ResponseHeaders = object : ResponseHeaders() {
         // API Gateway and ALB rebuild the HTTP response, so connection-level headers are meaningless here.
@@ -38,9 +40,21 @@ internal class LambdaApplicationResponse(private val lambdaCall: LambdaApplicati
         // BaseApplicationResponse keeps the status; toLambdaResponse() reads it from there.
     }
 
+    // Ktor's own failure handling cannot respond once headers are committed; without this the call would
+    // come back as a successful, truncated response.
+    @Suppress("TooGenericExceptionCaught")
+    override suspend fun respondOutgoingContent(content: OutgoingContent) {
+        try {
+            super.respondOutgoingContent(content)
+        } catch (error: Throwable) {
+            if (isCommitted) failureAfterCommit = error
+            throw error
+        }
+    }
+
     override suspend fun respondFromBytes(bytes: ByteArray) {
         ensureContentLength(bytes)
-        body = CompletableDeferred(bytes)
+        body = bytes
     }
 
     private fun ensureContentLength(bytes: ByteArray) {
@@ -52,13 +66,13 @@ internal class LambdaApplicationResponse(private val lambdaCall: LambdaApplicati
     }
 
     override suspend fun respondNoContent(content: OutgoingContent.NoContent) {
-        body = CompletableDeferred(ByteArray(0))
+        body = ByteArray(0)
     }
 
     override suspend fun respondFromChannel(readChannel: ByteReadChannel) {
         val bytes = readChannel.toByteArray()
         ensureContentLength(bytes)
-        body = CompletableDeferred(bytes)
+        body = bytes
     }
 
     // Start the reader first: ByteChannel.flush() suspends once ~1 MiB is buffered with no reader.
@@ -73,20 +87,18 @@ internal class LambdaApplicationResponse(private val lambdaCall: LambdaApplicati
             }
             reader.await()
         }
-        body = CompletableDeferred(bytes)
+        body = bytes
     }
 
-    override suspend fun responseChannel(): ByteWriteChannel {
-        val channel = ByteChannel()
-        body = lambdaCall.async { channel.toByteArray() }
-        return channel
-    }
+    // Every caller in BaseApplicationResponse is overridden above, so nothing should reach this.
+    override suspend fun responseChannel(): ByteWriteChannel =
+        throw UnsupportedOperationException("The AWS Lambda engine collects responses without a response channel")
 
     override suspend fun respondUpgrade(upgrade: OutgoingContent.ProtocolUpgrade): Unit =
         throw UnsupportedOperationException("Protocol upgrade is not supported on AWS Lambda")
 
-    suspend fun toLambdaResponse(): LambdaHttpResponse {
-        val bytes = body?.await() ?: ByteArray(0)
+    fun toLambdaResponse(): LambdaHttpResponse {
+        val bytes = body ?: ByteArray(0)
         val isHead = lambdaCall.request.local.method == HttpMethod.Head
         return LambdaHttpResponse(
             status = status()?.value ?: HttpStatusCode.OK.value,

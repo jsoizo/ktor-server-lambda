@@ -2,11 +2,13 @@ package com.jsoizo.ktor.server.lambda.runtime
 
 import com.jsoizo.ktor.server.lambda.ErrorMode
 import com.jsoizo.ktor.server.lambda.lambda
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.AfterTest
@@ -49,6 +52,13 @@ class LambdaRuntimeEngineTest {
                 get("/hello") { call.respondText("hello ${call.lambda.invocation.requestId}") }
                 get("/slow") { delay(10_000) }
                 get("/boom") { error("boom") }
+                get("/cancel") { throw CancellationException("cancelled by the application") }
+                // runBlocking ignores the caller's cancellation, standing in for a JDBC call or Thread.sleep.
+                get("/block") { runBlocking { delay(3_000) } }
+                get("/background") {
+                    call.launch { runBlocking { delay(3_000) } }
+                    call.respondText("sent")
+                }
                 get("/held") {
                     arrivals.send(Unit)
                     gate.await()
@@ -116,6 +126,60 @@ class LambdaRuntimeEngineTest {
         val posted = withTimeout(10_000) { api.posted.receive() }
         // Lambda only accepts the Category.Reason form; anything else is reported as Runtime.Unknown.
         assertEquals("error" to "Function.IllegalStateException", posted.kind to posted.errorType)
+    }
+
+    @Test
+    fun applicationCancellationIsReportedAndTheWorkerKeepsServing() = runBlocking {
+        startEngine(errorMode = ErrorMode.LambdaError)
+        api.enqueue(FakeRuntimeApi.Event("req-cancel", httpEvent("/cancel")))
+        api.enqueue(FakeRuntimeApi.Event("req-after", httpEvent("/hello")))
+        val first = withTimeout(10_000) { api.posted.receive() }
+        val second = withTimeout(10_000) { api.posted.receive() }
+        assertEquals("error", first.kind)
+        assertEquals("req-after" to "response", second.requestId to second.kind)
+    }
+
+    @Test
+    fun reportsDeadlineWithoutWaitingForABlockingHandler() = runBlocking {
+        startEngine()
+        val started = currentTimeMillis()
+        api.enqueue(FakeRuntimeApi.Event("req-block", httpEvent("/block"), deadlineEpochMillis = started + 300))
+        val posted = withTimeout(10_000) { api.posted.receive() }
+        assertEquals("error" to "Runtime.Timeout", posted.kind to posted.errorType)
+        assertTrue(currentTimeMillis() - started < 2_000, "Timeout reported after the handler returned")
+    }
+
+    @Test
+    fun backgroundWorkThatIgnoresCancellationDoesNotDelayTheResponse() = runBlocking {
+        startEngine()
+        val started = currentTimeMillis()
+        api.enqueue(FakeRuntimeApi.Event("req-bg", httpEvent("/background")))
+        val posted = withTimeout(10_000) { api.posted.receive() }
+        assertEquals("response", posted.kind)
+        assertTrue(currentTimeMillis() - started < 2_000, "Response waited for the background coroutine")
+    }
+
+    @Test
+    fun rejectedResponseIsReportedAsAnError() = runBlocking {
+        api.responseStatus = HttpStatusCode.PayloadTooLarge
+        startEngine()
+        api.enqueue(FakeRuntimeApi.Event("req-big", httpEvent("/hello")))
+        val response = withTimeout(10_000) { api.posted.receive() }
+        val error = withTimeout(10_000) { api.posted.receive() }
+        assertEquals("response", response.kind)
+        assertEquals("error" to "Runtime.ResponseRejected", error.kind to error.errorType)
+    }
+
+    @Test
+    fun errorReportCarriesMessageStackTraceAndInvocationId() = runBlocking {
+        startEngine(errorMode = ErrorMode.LambdaError)
+        api.enqueue(FakeRuntimeApi.Event("req-boom", httpEvent("/boom")))
+        val posted = withTimeout(10_000) { api.posted.receive() }
+        val body = Json.parseToJsonElement(posted.body).jsonObject
+        assertEquals("inv-req-boom", posted.invocationId)
+        assertEquals("boom", body["errorMessage"]!!.jsonPrimitive.content)
+        assertEquals("Function.IllegalStateException", body["errorType"]!!.jsonPrimitive.content)
+        assertTrue(body["stackTrace"]!!.jsonArray.isNotEmpty())
     }
 
     @Test
