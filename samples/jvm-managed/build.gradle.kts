@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     implementation(projects.ktorServerLambdaHandler)
+    // Ktor logs through SLF4J; without a binding its warnings never reach CloudWatch.
+    runtimeOnly(libs.slf4j.simple)
 }
 
 // The layout the managed Java runtime expects: classes at the root, dependencies under lib/.

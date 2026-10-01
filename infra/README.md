@@ -10,8 +10,9 @@ CDK stacks that deploy a sample behind every supported event source.
 `<Variant>` is `Native`, `JvmManaged` or `JvmRuntime`, picked with `-c variant=native|jvm-managed|jvm-runtime`
 (default `native`).
 
-**Costs.** Every endpoint is public and unauthenticated; API Gateway is throttled to 10 requests per second, but
-anyone who finds a URL can still invoke the function. The ALB stack bills hourly for the load balancer and its two
+**Costs.** Every endpoint is public and unauthenticated. The API Gateway stages are throttled to 10 requests per
+second, but the Function URL and the ALB are not: anyone who finds them can invoke the function as often as Lambda
+allows. The ALB stack bills hourly for the load balancer and its two
 public IPv4 addresses. Destroy the stacks when you are done.
 
 ## Deploy to AWS
@@ -51,7 +52,7 @@ query arrives, and whether HTTP API payload 1.0 puts the stage in `path`.
 
 ## Deploy to Floci
 
-[Floci](https://github.com/floci-io/floci) emulates AWS locally. Use `cdklocal`, and point both the general and the
+Not verified yet. [Floci](https://github.com/floci-io/floci) emulates AWS locally. Use `cdklocal`, and point both the general and the
 S3 endpoint at Floci; asset uploads use virtual-hosted S3 addresses.
 
 ```sh

@@ -7,4 +7,5 @@ dependencies {
     implementation(libs.detekt.gradle.plugin)
     implementation(libs.spotless.gradle.plugin)
     implementation(libs.maven.publish.gradle.plugin)
+    testImplementation(kotlin("test-junit"))
 }

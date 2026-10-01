@@ -41,12 +41,12 @@ export class HttpStack extends Stack {
   private httpApi(id: string, fn: lambda.IFunction, payloadFormatVersion: apigatewayv2.PayloadFormatVersion) {
     const api = new apigatewayv2.HttpApi(this, id, {
       defaultIntegration: new HttpLambdaIntegration(`${id}Integration`, fn, { payloadFormatVersion }),
+      // Created below instead, because the automatic $default stage cannot be throttled.
+      createDefaultStage: false,
     });
-    api.addStage("v1", {
-      stageName: "v1",
-      autoDeploy: true,
-      throttle: { rateLimit: throttle.throttlingRateLimit, burstLimit: throttle.throttlingBurstLimit },
-    });
+    const stageThrottle = { rateLimit: throttle.throttlingRateLimit, burstLimit: throttle.throttlingBurstLimit };
+    api.addStage("default", { stageName: "$default", autoDeploy: true, throttle: stageThrottle });
+    api.addStage("v1", { stageName: "v1", autoDeploy: true, throttle: stageThrottle });
     return api;
   }
 }

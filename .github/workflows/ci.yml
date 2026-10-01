@@ -26,29 +26,53 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v6
       # setup-gradle does not cache the Kotlin/Native toolchain, which lives outside the Gradle user home.
-      # Restore and save are split so that a failing build still saves the multi-gigabyte download.
+      # Each run saves under its own key and restores the newest by prefix, so a cache saved by a run that
+      # stopped halfway through the download is replaced by the next run instead of being reused forever.
       - id: konan
         uses: actions/cache/restore@v6
         with:
           path: ~/.konan
-          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
-      - name: Build, test and lint
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}-${{ github.run_id }}
+          restore-keys: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}-
+      - name: Test build logic
+        run: ./gradlew -p build-logic test
+      - id: build
+        name: Build, test and lint
         run: >-
           ./gradlew check
           :native-hello:bootstrapZipLinuxX64
           :native-hello:bootstrapZipLinuxArm64
           :jvm-runtime:installDist
           :jvm-managed:lambdaZip
-      - if: always() && steps.konan.outputs.cache-hit != 'true'
+      - if: always() && steps.build.outcome != 'cancelled' && steps.build.outcome != 'skipped'
         uses: actions/cache/save@v6
         with:
           path: ~/.konan
           key: ${{ steps.konan.outputs.cache-primary-key }}
       - name: Integration test on the Lambda Runtime Interface Emulator
         run: scripts/rie-test.sh all
+      # The functions deploy as arm64 by default, so also start that binary, under QEMU.
+      - uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+      - name: Integration test of the arm64 bootstrap
+        run: RIE_ARCH=arm64 scripts/rie-test.sh native
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: infra/package-lock.json
+      - name: Type-check and synthesize the CDK stacks
+        working-directory: infra
+        run: |
+          npm ci
+          npx tsc --noEmit
+          for variant in native jvm-managed jvm-runtime; do npx cdk synth --quiet -c variant="$variant"; done
       - name: Upload reports
         if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: reports
-          path: '**/build/reports/'
+          path: |
+            **/build/reports/
+            build/rie/*.log
