@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.ClientContext
 import com.amazonaws.services.lambda.runtime.CognitoIdentity
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.LambdaLogger
+import com.jsoizo.ktor.server.lambda.ErrorMode
 import com.jsoizo.ktor.server.lambda.events.InvalidEventException
 import com.jsoizo.ktor.server.lambda.lambda
 import io.ktor.server.application.Application
@@ -55,7 +56,8 @@ private class TestHandler(
         PrimingRequest.get("/health?deep=true"),
         PrimingRequest.postJson("/warm", """{"a":1}"""),
     ),
-) : KtorRequestStreamHandler({ testModule(recorder) }) {
+    errorMode: ErrorMode = ErrorMode.HttpResponse,
+) : KtorRequestStreamHandler({ testModule(recorder) }, { this.errorMode = errorMode }) {
     override val primingRequests get() = priming
 
     fun prime() = beforeCheckpoint(NoopCracContext)
@@ -87,6 +89,15 @@ class KtorRequestStreamHandlerTest {
         // ErrorMode.HttpResponse turns the exception into a 500, which priming only logs.
         val handler =
             TestHandler(priming = listOf(PrimingRequest.get("/broken"), PrimingRequest.get("/missing"), PrimingRequest.get("/health")))
+        handler.prime()
+        assertEquals(listOf("broken", "GET null"), handler.recorder.primed)
+    }
+
+    @Test
+    fun primingSurvivesAnExceptionThrownOutOfTheEngine() {
+        // In LambdaError mode the application's exception leaves handle(); priming must catch it and go on.
+        val handler =
+            TestHandler(priming = listOf(PrimingRequest.get("/broken"), PrimingRequest.get("/health")), errorMode = ErrorMode.LambdaError)
         handler.prime()
         assertEquals(listOf("broken", "GET null"), handler.recorder.primed)
     }

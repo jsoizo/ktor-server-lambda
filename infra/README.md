@@ -14,8 +14,8 @@ CDK stacks that deploy a sample behind every supported event source.
 requests per second, but the Function URL and the ALB are not: anyone who finds them can invoke the function as often
 as Lambda allows, using up the account's concurrency and throttling unrelated functions in the same region. Pass
 `-c reservedConcurrency=5` to cap the function; it is off by default because reserving concurrency fails on new
-accounts, whose limit is 10. The `/echo` route redacts `Authorization`, `Cookie` and session tokens, but still shows
-the rest of the event, such as account and API ids. The ALB stack bills hourly for the load balancer and its two
+accounts, whose limit is 10. The `/echo` route returns only the path and query fields of the event, never headers,
+cookies or authorizer data. The ALB stack bills hourly for the load balancer and its two
 public IPv4 addresses. Destroy the stacks when you are done.
 
 ## Deploy to AWS

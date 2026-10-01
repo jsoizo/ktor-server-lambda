@@ -26,14 +26,14 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v6
       # setup-gradle does not cache the Kotlin/Native toolchain, which lives outside the Gradle user home.
-      # Each run saves under its own key and restores the newest by prefix, so a cache saved by a run that
-      # stopped halfway through the download is replaced by the next run instead of being reused forever.
+      # Keyed by the Kotlin version alone, since only that changes the toolchain.
+      - id: kotlin
+        run: echo "version=$(sed -n 's/^kotlin = "\(.*\)"/\1/p' gradle/libs.versions.toml)" >> "$GITHUB_OUTPUT"
       - id: konan
         uses: actions/cache/restore@v6
         with:
           path: ~/.konan
-          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}-${{ github.run_id }}
-          restore-keys: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}-
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ steps.kotlin.outputs.version }}
       - name: Test build logic
         run: ./gradlew -p build-logic test
       - id: build
@@ -44,7 +44,9 @@ jobs:
           :native-hello:bootstrapZipLinuxArm64
           :jvm-runtime:installDist
           :jvm-managed:lambdaZip
-      - if: always() && steps.build.outcome != 'cancelled' && steps.build.outcome != 'skipped'
+      # Saved only after a successful build, so a download cut short is never cached; a later test failure
+      # still keeps it, because this step runs before the integration tests.
+      - if: steps.konan.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: ~/.konan
