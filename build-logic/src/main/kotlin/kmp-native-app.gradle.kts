@@ -5,7 +5,6 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
 }
 
-// Libraries present in the provided.al2023 image.
 val al2023Libraries = listOf(
     "libc.so.6",
     "libm.so.6",

@@ -31,7 +31,6 @@ class CrossFormatTest {
 
     private val injected = setOf("x-crlf", "x-ctl", "x (bad)", "x-tab")
 
-    // Adds a header with CR/LF, one with a control character, one with an invalid name and a valid one with a tab.
     private fun withExtraHeaders(fixture: String): String {
         val bad = mapOf("x-crlf" to "a\\r\\nInjected: 1", "x-ctl" to "a\\u0001b", "x (bad)" to "v", "x-tab" to "a\\tb")
         val single = bad.entries.joinToString(", ") { (k, v) -> "\"$k\": \"$v\"" }

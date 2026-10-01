@@ -27,7 +27,6 @@ class ApiGatewayV1CodecTest {
     @Test
     fun multiValueFieldsWinOverSingleValueFields() {
         assertEquals(listOf("text/html", "application/json"), request.headers.filter { it.first == "Accept" }.map { it.second })
-        // Names missing from multiValueHeaders are filled in from headers.
         assertEquals(listOf("last"), request.headers.filter { it.first == "X-Single" }.map { it.second })
         assertEquals("q=a%20b&q=b&lang=ja", request.rawQuery)
     }
