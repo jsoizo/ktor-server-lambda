@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 class ApiGatewayV2CodecTest {
     @Test
     fun decodesRawQueryAndCookies() {
-        val request = decode(Fixtures.httpV2)
+        val request = decode(Fixtures.HTTP_V2)
         assertEquals("GET", request.method)
         assertEquals("a=1&a=2&b=%20x", request.rawQuery)
         assertEquals("c1=v1; c2=v2", request.headers.single { it.first.equals("cookie", ignoreCase = true) }.second)
@@ -24,10 +24,10 @@ class ApiGatewayV2CodecTest {
 
     @Test
     fun stripsStageOnlyWhenWholeSegmentMatches() {
-        assertEquals("/items", decode(Fixtures.httpV2).path)
-        assertEquals("/production/x", decode(Fixtures.httpV2.replace("/prod/items", "/production/x")).path)
-        assertEquals("/", decode(Fixtures.httpV2.replace("/prod/items", "/prod")).path)
-        assertEquals("/prod/items", decode(Fixtures.httpV2, CodecConfig(stripStage = false)).path)
+        assertEquals("/items", decode(Fixtures.HTTP_V2).path)
+        assertEquals("/production/x", decode(Fixtures.HTTP_V2.replace("/prod/items", "/production/x")).path)
+        assertEquals("/", decode(Fixtures.HTTP_V2.replace("/prod/items", "/prod")).path)
+        assertEquals("/prod/items", decode(Fixtures.HTTP_V2, CodecConfig(stripStage = false)).path)
     }
 
     @Test
@@ -40,7 +40,7 @@ class ApiGatewayV2CodecTest {
 
     @Test
     fun encodesSetCookieIntoCookiesArrayAndJoinsOtherDuplicates() {
-        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.httpV2)).encode(
+        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.HTTP_V2)).encode(
             LambdaHttpResponse(
                 status = 200,
                 headers = listOf(
@@ -64,7 +64,7 @@ class ApiGatewayV2CodecTest {
 
     @Test
     fun dropsOnlyHeadersKtorWouldRejectInsteadOfFailingTheRequest() {
-        val event = Fixtures.httpV2.replace(
+        val event = Fixtures.HTTP_V2.replace(
             "\"accept\": \"text/html,application/json\"",
             "\"x-crlf\": \"a\\r\\nInjected: 1\", \"x-ctl\": \"a\\u0001b\", \"x (bad)\": \"v\", \"x-tab\": \"a\\tb\"",
         )
@@ -75,12 +75,11 @@ class ApiGatewayV2CodecTest {
     @Test
     fun keepsStageSegmentWhenRequestCameThroughCustomDomain() {
         // Custom domain mappings remove the stage, so a leading segment equal to it is a real path.
-        val event = Fixtures.httpV2
+        val event = Fixtures.HTTP_V2
             .replace("/prod/items", "/prod/items")
             .replace("\"domainName\": \"xyz.execute-api.ap-northeast-1.amazonaws.com\"", "\"domainName\": \"api.example.com\"")
         assertEquals("/prod/items", decode(event).path)
     }
 
-    private fun decode(json: String, config: CodecConfig = CodecConfig()) =
-        LambdaHttpCodecs.decode(Fixtures.parse(json), config).request
+    private fun decode(json: String, config: CodecConfig = CodecConfig()) = LambdaHttpCodecs.decode(Fixtures.parse(json), config).request
 }

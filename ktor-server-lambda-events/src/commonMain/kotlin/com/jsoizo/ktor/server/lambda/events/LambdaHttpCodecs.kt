@@ -32,21 +32,41 @@ public object LambdaHttpCodecs {
      *
      * @throws UnsupportedEventException if the event is Lambda@Edge, VPC Lattice, WebSocket or not HTTP at all
      */
-    public fun detect(event: JsonObject): LambdaHttpCodec<*> {
+    public fun detect(event: JsonObject): LambdaHttpCodec<*> = when (val detected = classify(event)) {
+        is Detected.Supported -> detected.codec
+        is Detected.Unsupported -> throw UnsupportedEventException(detected.kind)
+    }
+
+    // The order matters: e.g. WebSocket $connect events also carry the v1 fields.
+    private fun classify(event: JsonObject): Detected {
         val requestContext = event.objOrNull("requestContext")
         return when {
             (event["Records"] as? JsonArray)?.firstOrNull()?.let { (it as? JsonObject)?.has("cf") } == true ->
-                throw UnsupportedEventException("Lambda@Edge")
-            AlbCodec.matches(event) -> AlbCodec
+                Detected.Unsupported("Lambda@Edge")
+
+            AlbCodec.matches(event) -> Detected.Supported(AlbCodec)
+
             requestContext?.has("serviceArn") == true || requestContext?.has("serviceNetworkArn") == true ->
-                throw UnsupportedEventException("VPC Lattice")
-            ApiGatewayV2Codec.matches(event) -> ApiGatewayV2Codec
-            requestContext?.has("connectionId") == true -> throw UnsupportedEventException("API Gateway WebSocket")
-            ApiGatewayV1Codec.matches(event) -> ApiGatewayV1Codec
-            else -> throw UnsupportedEventException("Non-HTTP event")
+                Detected.Unsupported("VPC Lattice")
+
+            ApiGatewayV2Codec.matches(event) -> Detected.Supported(ApiGatewayV2Codec)
+
+            requestContext?.has("connectionId") == true -> Detected.Unsupported("API Gateway WebSocket")
+
+            ApiGatewayV1Codec.matches(event) -> Detected.Supported(ApiGatewayV1Codec)
+
+            else -> Detected.Unsupported("Non-HTTP event")
         }
     }
 
+    private sealed interface Detected {
+        class Supported(val codec: LambdaHttpCodec<*>) : Detected
+
+        class Unsupported(val kind: String) : Detected
+    }
+
+    // A codec may hit any runtime exception on an unexpected JSON shape; report it as a malformed event.
+    @Suppress("TooGenericExceptionCaught")
     private fun <S : Any> decodeWith(codec: LambdaHttpCodec<S>, event: JsonObject, config: CodecConfig): DecodedEvent {
         val decoded = try {
             codec.decode(event, config)

@@ -7,7 +7,4 @@ public class UnsupportedEventException(
 ) : RuntimeException("Unsupported event: $kind")
 
 /** The format was detected, but a required field is missing or has the wrong type. */
-public class InvalidEventException(
-    message: String,
-    cause: Throwable? = null,
-) : RuntimeException(message, cause)
+public class InvalidEventException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)

@@ -16,7 +16,9 @@ public fun interface BinaryBodyPolicy {
         public val Default: BinaryBodyPolicy = BinaryBodyPolicy { headers, body ->
             when {
                 body.isEmpty() -> false
+
                 headers.any { it.first.equals("Content-Encoding", ignoreCase = true) } -> true
+
                 else -> {
                     val contentType = headers.firstOrNull { it.first.equals("Content-Type", ignoreCase = true) }?.second
                     if (contentType != null && !isTextContentType(contentType)) true else !isValidUtf8(body)

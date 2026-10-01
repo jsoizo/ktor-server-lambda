@@ -8,7 +8,7 @@ import kotlinx.serialization.json.jsonObject
 internal object Fixtures {
     fun parse(json: String): JsonObject = Json.parseToJsonElement(json).jsonObject
 
-    val restV1 = """
+    const val REST_V1 = """
     {
       "resource": "/{proxy+}",
       "path": "/users/42",
@@ -34,7 +34,7 @@ internal object Fixtures {
     }
     """
 
-    val httpV2 = """
+    const val HTTP_V2 = """
     {
       "version": "2.0",
       "routeKey": "ANY /{proxy+}",
@@ -68,7 +68,7 @@ internal object Fixtures {
     }
     """
 
-    val albMulti = """
+    const val ALB_MULTI = """
     {
       "requestContext": { "elb": { "targetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/tg/abc" } },
       "httpMethod": "GET",
@@ -85,7 +85,7 @@ internal object Fixtures {
     }
     """
 
-    val albSingle = """
+    const val ALB_SINGLE = """
     {
       "requestContext": { "elb": { "targetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/tg/abc" } },
       "httpMethod": "GET",

@@ -19,11 +19,9 @@ internal fun JsonObject.stringOrNull(key: String): String? {
     return if (value is JsonNull) null else value.content
 }
 
-internal fun JsonObject.requireString(key: String): String =
-    stringOrNull(key) ?: throw InvalidEventException("Missing string field: $key")
+internal fun JsonObject.requireString(key: String): String = stringOrNull(key) ?: throw InvalidEventException("Missing string field: $key")
 
-internal fun JsonObject.boolean(key: String): Boolean =
-    (this[key] as? JsonPrimitive)?.content?.toBooleanStrictOrNull() ?: false
+internal fun JsonObject.boolean(key: String): Boolean = (this[key] as? JsonPrimitive)?.content?.toBooleanStrictOrNull() ?: false
 
 /** Flattens `{"k": "v"}` into (k, v) pairs, dropping null values. */
 internal fun JsonObject.singleValueMap(key: String): List<Pair<String, String>> {
@@ -47,5 +45,4 @@ internal fun JsonObject.stringList(key: String): List<String> {
     return array.mapNotNull { it.primitiveContentOrNull() }
 }
 
-private fun JsonElement.primitiveContentOrNull(): String? =
-    (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.content
+private fun JsonElement.primitiveContentOrNull(): String? = (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.content

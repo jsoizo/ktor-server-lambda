@@ -11,14 +11,14 @@ class AlbCodecTest {
     @Test
     fun keepsQueryPercentEncodedAsAlbSendsIt() {
         // ALB does not decode the query; decoding it again would double-encode.
-        val request = decode(Fixtures.albMulti)
+        val request = decode(Fixtures.ALB_MULTI)
         assertEquals("q=a%20b&q=c%2Bd", request.rawQuery)
-        assertEquals("q=a%20b", decode(Fixtures.albSingle).rawQuery)
+        assertEquals("q=a%20b", decode(Fixtures.ALB_SINGLE).rawQuery)
     }
 
     @Test
     fun takesRemoteAddressAndSchemeFromForwardedHeaders() {
-        val request = decode(Fixtures.albMulti)
+        val request = decode(Fixtures.ALB_MULTI)
         assertEquals("10.0.0.5", request.remoteAddress)
         assertEquals("http", request.scheme)
         assertEquals(80, request.port)
@@ -28,7 +28,7 @@ class AlbCodecTest {
     @Test
     fun takesRemoteAddressFromLastForwardedForEntry() {
         // A client can send its own X-Forwarded-For; ALB appends the real peer to the last one.
-        val event = Fixtures.albMulti.replace(
+        val event = Fixtures.ALB_MULTI.replace(
             "\"x-forwarded-for\": [\"198.51.100.1, 10.0.0.5\"]",
             "\"x-forwarded-for\": [\"6.6.6.6\", \"198.51.100.1, 10.0.0.5\"]",
         )
@@ -37,7 +37,7 @@ class AlbCodecTest {
 
     @Test
     fun joinsRepeatedHeadersInSingleValueMode() {
-        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.albSingle)).encode(
+        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.ALB_SINGLE)).encode(
             LambdaHttpResponse(200, listOf("Vary" to "Accept", "Vary" to "Origin"), ByteArray(0)),
         )
         assertEquals("Accept, Origin", json["headers"]!!.jsonObject["Vary"]!!.jsonPrimitive.content)
@@ -45,7 +45,7 @@ class AlbCodecTest {
 
     @Test
     fun answersInMultiValueModeWhenRequestUsedIt() {
-        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.albMulti)).encode(response())
+        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.ALB_MULTI)).encode(response())
         assertEquals("200 OK", json["statusDescription"]!!.jsonPrimitive.content)
         assertNull(json["headers"])
         assertEquals(2, json["multiValueHeaders"]!!.jsonObject["Set-Cookie"]!!.jsonArray.size)
@@ -55,7 +55,7 @@ class AlbCodecTest {
     fun answersInSingleValueModeAndWarnsAboutDroppedCookies() {
         val warnings = mutableListOf<String>()
         val config = CodecConfig(onWarning = { warnings += it })
-        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.albSingle), config).encode(response())
+        val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.ALB_SINGLE), config).encode(response())
         assertNull(json["multiValueHeaders"])
         assertEquals("b=2", json["headers"]!!.jsonObject["Set-Cookie"]!!.jsonPrimitive.content)
         assertEquals(1, warnings.size)

@@ -1,5 +1,6 @@
 package com.jsoizo.ktor.server.lambda.events
 
+import io.ktor.http.parseQueryString
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -8,10 +9,9 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import io.ktor.http.parseQueryString
 
 class ApiGatewayV1CodecTest {
-    private val event = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.restV1))
+    private val event = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.REST_V1))
     private val request = event.request
 
     @Test
@@ -34,7 +34,7 @@ class ApiGatewayV1CodecTest {
 
     @Test
     fun reencodesQueryValuesWithReservedCharacters() {
-        val event = Fixtures.restV1.replace("\"q\": [\"a b\", \"b\"], \"lang\": [\"ja\"]", "\"q\": [\"a+b&c=d\"]")
+        val event = Fixtures.REST_V1.replace("\"q\": [\"a b\", \"b\"], \"lang\": [\"ja\"]", "\"q\": [\"a+b&c=d\"]")
         val query = LambdaHttpCodecs.decode(Fixtures.parse(event)).request.rawQuery
         assertEquals("q=a%2Bb%26c%3Dd", query)
         assertEquals("a+b&c=d", parseQueryString(query)["q"])
@@ -49,8 +49,11 @@ class ApiGatewayV1CodecTest {
     @Test
     fun acceptsNullMapsAndBodyFromTestConsoleEvents() {
         val event = Fixtures.parse(
-            """{"resource":"/","path":"/","httpMethod":"GET","headers":null,"multiValueHeaders":null,
-                "queryStringParameters":null,"multiValueQueryStringParameters":null,"requestContext":{},"body":null,"isBase64Encoded":false}""",
+            """
+            {"resource":"/","path":"/","httpMethod":"GET","headers":null,"multiValueHeaders":null,
+             "queryStringParameters":null,"multiValueQueryStringParameters":null,
+             "requestContext":{},"body":null,"isBase64Encoded":false}
+            """,
         )
         val decoded = LambdaHttpCodecs.decode(event).request
         assertEquals("", decoded.rawQuery)
@@ -59,16 +62,16 @@ class ApiGatewayV1CodecTest {
 
     @Test
     fun rejectsInvalidBase64BodyAsInvalidEvent() {
-        val event = Fixtures.restV1.replace("\"aGVsbG8=\"", "\"not*base64\"")
+        val event = Fixtures.REST_V1.replace("\"aGVsbG8=\"", "\"not*base64\"")
         assertFailsWith<InvalidEventException> { LambdaHttpCodecs.decode(Fixtures.parse(event)) }
     }
 
     @Test
     fun stripsConfiguredBasePathOnSegmentBoundary() {
         val config = CodecConfig(stripBasePath = "/users")
-        assertEquals("/42", LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.restV1), config).request.path)
+        assertEquals("/42", LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.REST_V1), config).request.path)
         val other = CodecConfig(stripBasePath = "/use")
-        assertEquals("/users/42", LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.restV1), other).request.path)
+        assertEquals("/users/42", LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.REST_V1), other).request.path)
     }
 
     @Test

@@ -29,7 +29,7 @@ class BodyEncodingTest {
     @Test
     fun neverSendsInvalidUtf8AsTextEvenIfPolicySaysText() {
         val event = LambdaHttpCodecs.decode(
-            Fixtures.parse(Fixtures.httpV2),
+            Fixtures.parse(Fixtures.HTTP_V2),
             CodecConfig(binaryBodyPolicy = { _, _ -> false }),
         )
         val json = event.encode(LambdaHttpResponse(200, emptyList(), byteArrayOf(0xC3.toByte(), 0x28)))

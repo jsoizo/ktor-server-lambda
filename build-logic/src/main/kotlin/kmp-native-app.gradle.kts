@@ -1,4 +1,5 @@
 plugins {
+    id("code-quality")
     id("org.jetbrains.kotlin.multiplatform")
 }
 
