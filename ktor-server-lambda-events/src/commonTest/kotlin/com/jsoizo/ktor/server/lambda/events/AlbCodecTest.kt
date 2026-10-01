@@ -36,6 +36,39 @@ class AlbCodecTest {
     }
 
     @Test
+    fun splitsClientPortThatAlbAppendsToForwardedFor() {
+        val cases = mapOf(
+            "198.51.100.1, 10.0.0.5:8080" to ("10.0.0.5" to 8080),
+            "198.51.100.1, [2001:db8::7348]:8080" to ("2001:db8::7348" to 8080),
+            "198.51.100.1, 2001:db8::7348" to ("2001:db8::7348" to null),
+        )
+        for ((forwardedFor, expected) in cases) {
+            val event = Fixtures.ALB_MULTI.replace("\"198.51.100.1, 10.0.0.5\"", "\"$forwardedFor\"")
+            val request = decode(event)
+            assertEquals(expected, request.remoteAddress to request.remotePort, forwardedFor)
+        }
+    }
+
+    @Test
+    fun trustsTheLastForwardedProtoAndPort() {
+        val event = Fixtures.ALB_MULTI
+            .replace("\"x-forwarded-proto\": [\"http\"]", "\"x-forwarded-proto\": [\"http\", \"https\"]")
+            .replace("\"x-forwarded-port\": [\"80\"]", "\"x-forwarded-port\": [\"80\", \"443\"]")
+        val request = decode(event)
+        assertEquals("https" to 443, request.scheme to request.port)
+    }
+
+    @Test
+    fun describesOnlyStatusCodesItKnows() {
+        val event = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.ALB_SINGLE))
+        assertEquals("299", event.encode(LambdaHttpResponse(299, emptyList(), ByteArray(0)))["statusDescription"]!!.jsonPrimitive.content)
+        assertEquals(
+            "404 Not Found",
+            event.encode(LambdaHttpResponse(404, emptyList(), ByteArray(0)))["statusDescription"]!!.jsonPrimitive.content,
+        )
+    }
+
+    @Test
     fun joinsRepeatedHeadersInSingleValueMode() {
         val json = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.ALB_SINGLE)).encode(
             LambdaHttpResponse(200, listOf("Vary" to "Accept", "Vary" to "Origin"), ByteArray(0)),

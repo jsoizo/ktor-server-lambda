@@ -42,7 +42,7 @@ public class LambdaHttpRequest(
     public val host: String?,
     /** From `X-Forwarded-Port`, falling back to the default port of [scheme]. */
     public val port: Int?,
-    /** Path after stripping the stage and base path. */
+    /** Path after stripping the stage and base path, percent-encoded. */
     public val path: String,
     /** Query string without the leading `?`, percent-encoded. */
     public val rawQuery: String,
@@ -52,6 +52,8 @@ public class LambdaHttpRequest(
     public val body: ByteArray,
     /** Client address as reported by the event source, if any. */
     public val remoteAddress: String?,
+    /** Client port, when the event source reports it (ALB with `routing.http.xff_client_port.enabled`). */
+    public val remotePort: Int? = null,
     /** The service that sent the event. */
     public val source: EventSource,
     /** `true` when a payload v2 event came through a Lambda Function URL rather than API Gateway. */

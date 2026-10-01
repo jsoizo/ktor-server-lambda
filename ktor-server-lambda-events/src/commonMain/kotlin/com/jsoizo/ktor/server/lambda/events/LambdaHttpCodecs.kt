@@ -63,6 +63,9 @@ public object LambdaHttpCodecs {
             requestContext?.has("serviceArn") == true || requestContext?.has("serviceNetworkArn") == true ->
                 Detected.Unsupported("VPC Lattice")
 
+            // VPC Lattice v1 events have no requestContext and use snake_case fields.
+            event.has("raw_path") && event.has("method") -> Detected.Unsupported("VPC Lattice")
+
             ApiGatewayV2Codec.matches(event) -> Detected.Supported(ApiGatewayV2Codec)
 
             requestContext?.has("connectionId") == true -> Detected.Unsupported("API Gateway WebSocket")

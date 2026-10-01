@@ -33,6 +33,7 @@ class DetectionTest {
             """{"Records":[{"cf":{"request":{}}}]}""" to "Lambda@Edge",
             """{"version":"2.0","method":"GET","path":"/","requestContext":{"serviceArn":"arn","serviceNetworkArn":"arn"}}""" to
                 "VPC Lattice",
+            """{"raw_path":"/","method":"GET","headers":{},"is_base64_encoded":false}""" to "VPC Lattice",
             """{"httpMethod":"GET","path":"/","resource":"/","requestContext":{"connectionId":"abc","eventType":"CONNECT"}}""" to
                 "API Gateway WebSocket",
             """{"Records":[{"eventSource":"aws:sqs","body":"x"}]}""" to "Non-HTTP event",

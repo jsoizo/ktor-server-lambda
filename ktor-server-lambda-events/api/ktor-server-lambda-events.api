@@ -98,7 +98,8 @@ public final class com/jsoizo/ktor/server/lambda/events/LambdaHttpCodecs {
 }
 
 public final class com/jsoizo/ktor/server/lambda/events/LambdaHttpRequest {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;[BLjava/lang/String;Lcom/jsoizo/ktor/server/lambda/events/EventSource;ZLkotlinx/serialization/json/JsonObject;Lkotlinx/serialization/json/JsonObject;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;[BLjava/lang/String;Ljava/lang/Integer;Lcom/jsoizo/ktor/server/lambda/events/EventSource;ZLkotlinx/serialization/json/JsonObject;Lkotlinx/serialization/json/JsonObject;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;[BLjava/lang/String;Ljava/lang/Integer;Lcom/jsoizo/ktor/server/lambda/events/EventSource;ZLkotlinx/serialization/json/JsonObject;Lkotlinx/serialization/json/JsonObject;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBody ()[B
 	public final fun getHeaders ()Ljava/util/List;
 	public final fun getHost ()Ljava/lang/String;
@@ -108,6 +109,7 @@ public final class com/jsoizo/ktor/server/lambda/events/LambdaHttpRequest {
 	public final fun getRawEvent ()Lkotlinx/serialization/json/JsonObject;
 	public final fun getRawQuery ()Ljava/lang/String;
 	public final fun getRemoteAddress ()Ljava/lang/String;
+	public final fun getRemotePort ()Ljava/lang/Integer;
 	public final fun getRequestContext ()Lkotlinx/serialization/json/JsonObject;
 	public final fun getScheme ()Ljava/lang/String;
 	public final fun getSource ()Lcom/jsoizo/ktor/server/lambda/events/EventSource;

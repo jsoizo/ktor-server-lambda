@@ -51,7 +51,7 @@ internal class LambdaApplicationRequest(call: LambdaApplicationCall, private val
         override val serverHost: String get() = hostHeader?.let(::withoutPort) ?: localHost
         override val serverPort: Int get() = hostHeader?.let(::portOf) ?: localPort
         override val remoteHost: String get() = request.remoteAddress ?: "unknown"
-        override val remotePort: Int get() = 0
+        override val remotePort: Int get() = request.remotePort ?: 0
         override val remoteAddress: String get() = request.remoteAddress ?: "unknown"
 
         @Deprecated("Use localHost or serverHost instead", level = DeprecationLevel.ERROR)

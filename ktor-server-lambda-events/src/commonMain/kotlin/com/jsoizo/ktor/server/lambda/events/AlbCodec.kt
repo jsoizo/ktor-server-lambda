@@ -15,6 +15,7 @@ import com.jsoizo.ktor.server.lambda.events.internal.requireString
 import com.jsoizo.ktor.server.lambda.events.internal.sanitized
 import com.jsoizo.ktor.server.lambda.events.internal.schemeFrom
 import com.jsoizo.ktor.server.lambda.events.internal.singleValueMap
+import com.jsoizo.ktor.server.lambda.events.internal.splitForwardedFor
 import com.jsoizo.ktor.server.lambda.events.internal.stringOrNull
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.JsonArray
@@ -48,6 +49,8 @@ public object AlbCodec : LambdaHttpCodec<AlbState> {
             event.singleValueMap("queryStringParameters")
         }
         val scheme = schemeFrom(headers)
+        // ALB appends the peer address to the last X-Forwarded-For; earlier entries come from the client.
+        val client = headers.lastValue("X-Forwarded-For")?.substringAfterLast(',')?.trim()?.let(::splitForwardedFor)
         val request = LambdaHttpRequest(
             method = event.requireString("httpMethod"),
             scheme = scheme,
@@ -58,8 +61,8 @@ public object AlbCodec : LambdaHttpCodec<AlbState> {
             rawQuery = query.joinToString("&") { (k, v) -> "$k=$v" },
             headers = headers,
             body = decodeBody(event.stringOrNull("body"), event.boolean("isBase64Encoded")),
-            // ALB appends the peer address to the last X-Forwarded-For; earlier entries come from the client.
-            remoteAddress = headers.lastValue("X-Forwarded-For")?.split(',')?.lastOrNull()?.trim(),
+            remoteAddress = client?.first,
+            remotePort = client?.second,
             source = source,
             isFunctionUrl = false,
             requestContext = event.objOrNull("requestContext"),
@@ -73,7 +76,7 @@ public object AlbCodec : LambdaHttpCodec<AlbState> {
         val grouped = response.headers.groupByName()
         return buildJsonObject {
             put("statusCode", response.status)
-            put("statusDescription", "${response.status} ${HttpStatusCode.fromValue(response.status).description}")
+            put("statusDescription", statusDescription(response.status))
             if (state.multiValueHeaders) {
                 put("multiValueHeaders", JsonObject(grouped.associate { (name, values) -> name to JsonArray(values.map(::JsonPrimitive)) }))
             } else {
@@ -97,5 +100,11 @@ public object AlbCodec : LambdaHttpCodec<AlbState> {
             put("body", body.body)
             put("isBase64Encoded", body.isBase64Encoded)
         }
+    }
+
+    // A code Ktor does not know would otherwise read "299 Unknown Status Code" to clients.
+    private fun statusDescription(status: Int): String {
+        val known = HttpStatusCode.allStatusCodes.firstOrNull { it.value == status }
+        return if (known != null) "$status ${known.description}" else "$status"
     }
 }

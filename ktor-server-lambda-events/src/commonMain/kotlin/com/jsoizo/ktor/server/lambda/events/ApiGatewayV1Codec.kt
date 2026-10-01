@@ -39,7 +39,7 @@ public object ApiGatewayV1Codec : LambdaHttpCodec<Unit> {
             multi = event.multiValueMap("multiValueHeaders"),
             single = event.singleValueMap("headers"),
         ).sanitized()
-        val query = event.multiValueMap("multiValueQueryStringParameters")
+        val query = event.multiValueMap("multiValueQueryStringParameters")?.takeIf { it.isNotEmpty() }
             ?: event.singleValueMap("queryStringParameters")
         val scheme = schemeFrom(headers)
         val request = LambdaHttpRequest(

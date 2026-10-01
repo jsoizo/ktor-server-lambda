@@ -41,7 +41,9 @@ public object ApiGatewayV2Codec : LambdaHttpCodec<Unit> {
         val http = requestContext.objOrNull("http") ?: throw InvalidEventException("Missing requestContext.http")
         val cookies = event.stringList("cookies")
         val headers = buildList {
-            addAll(event.singleValueMap("headers"))
+            // API Gateway moves Cookie into `cookies`; emulators may send both, which would duplicate it.
+            val fromHeaders = event.singleValueMap("headers")
+            addAll(if (cookies.isEmpty()) fromHeaders else fromHeaders.filterNot { it.first.equals("cookie", ignoreCase = true) })
             if (cookies.isNotEmpty()) add("cookie" to cookies.joinToString("; "))
         }.sanitized()
         val scheme = schemeFrom(headers)
@@ -58,7 +60,8 @@ public object ApiGatewayV2Codec : LambdaHttpCodec<Unit> {
                 applyStage = config.stripStage && domainName?.contains(".execute-api.") == true,
                 basePath = config.stripBasePath,
             ),
-            rawQuery = event.stringOrNull("rawQueryString").orEmpty(),
+            // The Function URL documentation shows rawQueryString with a leading '?' in one place.
+            rawQuery = event.stringOrNull("rawQueryString").orEmpty().removePrefix("?"),
             headers = headers,
             body = decodeBody(event.stringOrNull("body"), event.boolean("isBase64Encoded")),
             remoteAddress = http.stringOrNull("sourceIp"),

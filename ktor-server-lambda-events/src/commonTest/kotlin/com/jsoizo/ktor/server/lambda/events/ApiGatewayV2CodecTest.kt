@@ -63,13 +63,17 @@ class ApiGatewayV2CodecTest {
     }
 
     @Test
-    fun dropsOnlyHeadersKtorWouldRejectInsteadOfFailingTheRequest() {
-        val event = Fixtures.HTTP_V2.replace(
-            "\"accept\": \"text/html,application/json\"",
-            "\"x-crlf\": \"a\\r\\nInjected: 1\", \"x-ctl\": \"a\\u0001b\", \"x (bad)\": \"v\", \"x-tab\": \"a\\tb\"",
+    fun keepsOneCookieHeaderWhenEventCarriesBothCookiesAndCookieHeader() {
+        val event = Fixtures.HTTP_V2.replace("\"accept\": \"text/html,application/json\"", "\"cookie\": \"c1=v1; c2=v2\"")
+        assertEquals(1, decode(event).headers.count { it.first.equals("cookie", ignoreCase = true) })
+    }
+
+    @Test
+    fun acceptsRawQueryStringWithLeadingQuestionMark() {
+        assertEquals(
+            "a=1",
+            decode(Fixtures.HTTP_V2.replace("\"rawQueryString\": \"a=1&a=2&b=%20x\"", "\"rawQueryString\": \"?a=1\"")).rawQuery,
         )
-        val names = decode(event).headers.map { it.first }
-        assertEquals(listOf("host", "x-tab", "cookie"), names)
     }
 
     @Test

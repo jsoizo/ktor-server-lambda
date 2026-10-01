@@ -61,6 +61,15 @@ class ApiGatewayV1CodecTest {
     }
 
     @Test
+    fun fallsBackToSingleValueQueryWhenMultiValueMapIsEmpty() {
+        val event = Fixtures.REST_V1.replace(
+            "\"multiValueQueryStringParameters\": { \"q\": [\"a b\", \"b\"], \"lang\": [\"ja\"] }",
+            "\"multiValueQueryStringParameters\": {}",
+        )
+        assertEquals("q=b", LambdaHttpCodecs.decode(Fixtures.parse(event)).request.rawQuery)
+    }
+
+    @Test
     fun rejectsInvalidBase64BodyAsInvalidEvent() {
         val event = Fixtures.REST_V1.replace("\"aGVsbG8=\"", "\"not*base64\"")
         assertFailsWith<InvalidEventException> { LambdaHttpCodecs.decode(Fixtures.parse(event)) }

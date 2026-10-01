@@ -83,7 +83,7 @@ final class com.jsoizo.ktor.server.lambda.events/InvalidEventException : kotlin/
 }
 
 final class com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest { // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/String?, kotlin/Int?, kotlin/String, kotlin/String, kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/String>>, kotlin/ByteArray, kotlin/String?, com.jsoizo.ktor.server.lambda.events/EventSource, kotlin/Boolean, kotlinx.serialization.json/JsonObject?, kotlinx.serialization.json/JsonObject) // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Int?;kotlin.String;kotlin.String;kotlin.collections.List<kotlin.Pair<kotlin.String,kotlin.String>>;kotlin.ByteArray;kotlin.String?;com.jsoizo.ktor.server.lambda.events.EventSource;kotlin.Boolean;kotlinx.serialization.json.JsonObject?;kotlinx.serialization.json.JsonObject){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String?, kotlin/Int?, kotlin/String, kotlin/String, kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/String>>, kotlin/ByteArray, kotlin/String?, kotlin/Int? = ..., com.jsoizo.ktor.server.lambda.events/EventSource, kotlin/Boolean, kotlinx.serialization.json/JsonObject?, kotlinx.serialization.json/JsonObject) // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Int?;kotlin.String;kotlin.String;kotlin.collections.List<kotlin.Pair<kotlin.String,kotlin.String>>;kotlin.ByteArray;kotlin.String?;kotlin.Int?;com.jsoizo.ktor.server.lambda.events.EventSource;kotlin.Boolean;kotlinx.serialization.json.JsonObject?;kotlinx.serialization.json.JsonObject){}[0]
 
     final val body // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.body|{}body[0]
         final fun <get-body>(): kotlin/ByteArray // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.body.<get-body>|<get-body>(){}[0]
@@ -105,6 +105,8 @@ final class com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest { // com.jsoi
         final fun <get-rawQuery>(): kotlin/String // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.rawQuery.<get-rawQuery>|<get-rawQuery>(){}[0]
     final val remoteAddress // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.remoteAddress|{}remoteAddress[0]
         final fun <get-remoteAddress>(): kotlin/String? // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.remoteAddress.<get-remoteAddress>|<get-remoteAddress>(){}[0]
+    final val remotePort // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.remotePort|{}remotePort[0]
+        final fun <get-remotePort>(): kotlin/Int? // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.remotePort.<get-remotePort>|<get-remotePort>(){}[0]
     final val requestContext // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.requestContext|{}requestContext[0]
         final fun <get-requestContext>(): kotlinx.serialization.json/JsonObject? // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.requestContext.<get-requestContext>|<get-requestContext>(){}[0]
     final val scheme // com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest.scheme|{}scheme[0]
