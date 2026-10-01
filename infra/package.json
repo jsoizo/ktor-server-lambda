@@ -1,0 +1,24 @@
+{
+  "name": "ktor-server-lambda-infra",
+  "private": true,
+  "description": "CDK stacks for trying the ktor-server-lambda samples behind every supported event source",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "synth": "cdk synth",
+    "cdk": "cdk"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.272.0",
+    "constructs": "10.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.4",
+    "aws-cdk": "2.1144.0",
+    "aws-cdk-local": "3.0.4",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

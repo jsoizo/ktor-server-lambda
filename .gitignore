@@ -7,4 +7,7 @@ local.properties
 .DS_Store
 node_modules/
 cdk.out/
+infra/**/*.js
+infra/**/*.d.ts
+.env
 .work/
