@@ -1,5 +1,6 @@
 plugins {
     id("code-quality")
+    id("published-library")
     id("org.jetbrains.kotlin.jvm")
 }
 

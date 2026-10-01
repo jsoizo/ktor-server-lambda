@@ -1,0 +1,79 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.jsoizo:ktor-server-lambda-runtime>
+abstract interface com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient : kotlin/AutoCloseable { // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient|null[0]
+    abstract suspend fun error(com.jsoizo.ktor.server.lambda/LambdaInvocation, com.jsoizo.ktor.server.lambda.runtime/LambdaError) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient.error|error(com.jsoizo.ktor.server.lambda.LambdaInvocation;com.jsoizo.ktor.server.lambda.runtime.LambdaError){}[0]
+    abstract suspend fun initError(com.jsoizo.ktor.server.lambda.runtime/LambdaError) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient.initError|initError(com.jsoizo.ktor.server.lambda.runtime.LambdaError){}[0]
+    abstract suspend fun next(): com.jsoizo.ktor.server.lambda.runtime/NextInvocation // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient.next|next(){}[0]
+    abstract suspend fun respond(com.jsoizo.ktor.server.lambda/LambdaInvocation, kotlin/ByteArray) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient.respond|respond(com.jsoizo.ktor.server.lambda.LambdaInvocation;kotlin.ByteArray){}[0]
+}
+
+final class com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient : com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient { // com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient|null[0]
+    constructor <init>(kotlin/String = ..., kotlin/Int = ...) // com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final fun close() // com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient.close|close(){}[0]
+    final suspend fun error(com.jsoizo.ktor.server.lambda/LambdaInvocation, com.jsoizo.ktor.server.lambda.runtime/LambdaError) // com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient.error|error(com.jsoizo.ktor.server.lambda.LambdaInvocation;com.jsoizo.ktor.server.lambda.runtime.LambdaError){}[0]
+    final suspend fun initError(com.jsoizo.ktor.server.lambda.runtime/LambdaError) // com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient.initError|initError(com.jsoizo.ktor.server.lambda.runtime.LambdaError){}[0]
+    final suspend fun next(): com.jsoizo.ktor.server.lambda.runtime/NextInvocation // com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient.next|next(){}[0]
+    final suspend fun respond(com.jsoizo.ktor.server.lambda/LambdaInvocation, kotlin/ByteArray) // com.jsoizo.ktor.server.lambda.runtime/CioLambdaRuntimeClient.respond|respond(com.jsoizo.ktor.server.lambda.LambdaInvocation;kotlin.ByteArray){}[0]
+}
+
+final class com.jsoizo.ktor.server.lambda.runtime/LambdaError { // com.jsoizo.ktor.server.lambda.runtime/LambdaError|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String> = ...) // com.jsoizo.ktor.server.lambda.runtime/LambdaError.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val errorMessage // com.jsoizo.ktor.server.lambda.runtime/LambdaError.errorMessage|{}errorMessage[0]
+        final fun <get-errorMessage>(): kotlin/String // com.jsoizo.ktor.server.lambda.runtime/LambdaError.errorMessage.<get-errorMessage>|<get-errorMessage>(){}[0]
+    final val errorType // com.jsoizo.ktor.server.lambda.runtime/LambdaError.errorType|{}errorType[0]
+        final fun <get-errorType>(): kotlin/String // com.jsoizo.ktor.server.lambda.runtime/LambdaError.errorType.<get-errorType>|<get-errorType>(){}[0]
+    final val stackTrace // com.jsoizo.ktor.server.lambda.runtime/LambdaError.stackTrace|{}stackTrace[0]
+        final fun <get-stackTrace>(): kotlin.collections/List<kotlin/String> // com.jsoizo.ktor.server.lambda.runtime/LambdaError.stackTrace.<get-stackTrace>|<get-stackTrace>(){}[0]
+}
+
+final class com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine : com.jsoizo.ktor.server.lambda/LambdaApplicationEngine { // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine|null[0]
+    constructor <init>(io.ktor.server.application/ApplicationEnvironment, io.ktor.events/Events, kotlin/Boolean, com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration, kotlin/Function0<io.ktor.server.application/Application>) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.<init>|<init>(io.ktor.server.application.ApplicationEnvironment;io.ktor.events.Events;kotlin.Boolean;com.jsoizo.ktor.server.lambda.runtime.LambdaRuntimeEngine.Configuration;kotlin.Function0<io.ktor.server.application.Application>){}[0]
+
+    final fun start(kotlin/Boolean): io.ktor.server.engine/ApplicationEngine // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.start|start(kotlin.Boolean){}[0]
+    final fun stop(kotlin/Long, kotlin/Long) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.stop|stop(kotlin.Long;kotlin.Long){}[0]
+
+    final class Configuration : com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration { // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration|null[0]
+        constructor <init>() // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration.<init>|<init>(){}[0]
+
+        final var concurrency // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration.concurrency|{}concurrency[0]
+            final fun <get-concurrency>(): kotlin/Int? // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration.concurrency.<get-concurrency>|<get-concurrency>(){}[0]
+            final fun <set-concurrency>(kotlin/Int?) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration.concurrency.<set-concurrency>|<set-concurrency>(kotlin.Int?){}[0]
+        final var runtimeClient // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration.runtimeClient|{}runtimeClient[0]
+            final fun <get-runtimeClient>(): kotlin/Function1<kotlin/Int, com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient> // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration.runtimeClient.<get-runtimeClient>|<get-runtimeClient>(){}[0]
+            final fun <set-runtimeClient>(kotlin/Function1<kotlin/Int, com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeClient>) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration.runtimeClient.<set-runtimeClient>|<set-runtimeClient>(kotlin.Function1<kotlin.Int,com.jsoizo.ktor.server.lambda.runtime.LambdaRuntimeClient>){}[0]
+    }
+}
+
+final class com.jsoizo.ktor.server.lambda.runtime/NextInvocation { // com.jsoizo.ktor.server.lambda.runtime/NextInvocation|null[0]
+    constructor <init>(com.jsoizo.ktor.server.lambda/LambdaInvocation, kotlin/ByteArray) // com.jsoizo.ktor.server.lambda.runtime/NextInvocation.<init>|<init>(com.jsoizo.ktor.server.lambda.LambdaInvocation;kotlin.ByteArray){}[0]
+
+    final val event // com.jsoizo.ktor.server.lambda.runtime/NextInvocation.event|{}event[0]
+        final fun <get-event>(): kotlin/ByteArray // com.jsoizo.ktor.server.lambda.runtime/NextInvocation.event.<get-event>|<get-event>(){}[0]
+    final val invocation // com.jsoizo.ktor.server.lambda.runtime/NextInvocation.invocation|{}invocation[0]
+        final fun <get-invocation>(): com.jsoizo.ktor.server.lambda/LambdaInvocation // com.jsoizo.ktor.server.lambda.runtime/NextInvocation.invocation.<get-invocation>|<get-invocation>(){}[0]
+}
+
+final class com.jsoizo.ktor.server.lambda.runtime/RuntimeApiException : kotlin/RuntimeException { // com.jsoizo.ktor.server.lambda.runtime/RuntimeApiException|null[0]
+    constructor <init>(kotlin/Int, kotlin/Boolean, kotlin/String) // com.jsoizo.ktor.server.lambda.runtime/RuntimeApiException.<init>|<init>(kotlin.Int;kotlin.Boolean;kotlin.String){}[0]
+
+    final val fatal // com.jsoizo.ktor.server.lambda.runtime/RuntimeApiException.fatal|{}fatal[0]
+        final fun <get-fatal>(): kotlin/Boolean // com.jsoizo.ktor.server.lambda.runtime/RuntimeApiException.fatal.<get-fatal>|<get-fatal>(){}[0]
+    final val status // com.jsoizo.ktor.server.lambda.runtime/RuntimeApiException.status|{}status[0]
+        final fun <get-status>(): kotlin/Int // com.jsoizo.ktor.server.lambda.runtime/RuntimeApiException.status.<get-status>|<get-status>(){}[0]
+}
+
+final object com.jsoizo.ktor.server.lambda.runtime/AwsLambda : io.ktor.server.engine/ApplicationEngineFactory<com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine, com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration> { // com.jsoizo.ktor.server.lambda.runtime/AwsLambda|null[0]
+    final fun configuration(kotlin/Function1<com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration, kotlin/Unit>): com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration // com.jsoizo.ktor.server.lambda.runtime/AwsLambda.configuration|configuration(kotlin.Function1<com.jsoizo.ktor.server.lambda.runtime.LambdaRuntimeEngine.Configuration,kotlin.Unit>){}[0]
+    final fun create(io.ktor.server.application/ApplicationEnvironment, io.ktor.events/Events, kotlin/Boolean, com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration, kotlin/Function0<io.ktor.server.application/Application>): com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine // com.jsoizo.ktor.server.lambda.runtime/AwsLambda.create|create(io.ktor.server.application.ApplicationEnvironment;io.ktor.events.Events;kotlin.Boolean;com.jsoizo.ktor.server.lambda.runtime.LambdaRuntimeEngine.Configuration;kotlin.Function0<io.ktor.server.application.Application>){}[0]
+}
+
+final fun com.jsoizo.ktor.server.lambda.runtime/isRunningOnLambda(): kotlin/Boolean // com.jsoizo.ktor.server.lambda.runtime/isRunningOnLambda|isRunningOnLambda(){}[0]
+final fun com.jsoizo.ktor.server.lambda.runtime/lambdaMain(kotlin/Function0<io.ktor.server.engine/EmbeddedServer<*, *>>) // com.jsoizo.ktor.server.lambda.runtime/lambdaMain|lambdaMain(kotlin.Function0<io.ktor.server.engine.EmbeddedServer<*,*>>){}[0]

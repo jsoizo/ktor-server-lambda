@@ -1,0 +1,68 @@
+public final class com/jsoizo/ktor/server/lambda/runtime/AwsLambda : io/ktor/server/engine/ApplicationEngineFactory {
+	public static final field INSTANCE Lcom/jsoizo/ktor/server/lambda/runtime/AwsLambda;
+	public fun configuration (Lkotlin/jvm/functions/Function1;)Lcom/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeEngine$Configuration;
+	public synthetic fun configuration (Lkotlin/jvm/functions/Function1;)Lio/ktor/server/engine/ApplicationEngine$Configuration;
+	public fun create (Lio/ktor/server/application/ApplicationEnvironment;Lio/ktor/events/Events;ZLcom/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeEngine$Configuration;Lkotlin/jvm/functions/Function0;)Lcom/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeEngine;
+	public synthetic fun create (Lio/ktor/server/application/ApplicationEnvironment;Lio/ktor/events/Events;ZLio/ktor/server/engine/ApplicationEngine$Configuration;Lkotlin/jvm/functions/Function0;)Lio/ktor/server/engine/ApplicationEngine;
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/CioLambdaRuntimeClient : com/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeClient {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;I)V
+	public synthetic fun <init> (Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close ()V
+	public fun error (Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;Lcom/jsoizo/ktor/server/lambda/runtime/LambdaError;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun initError (Lcom/jsoizo/ktor/server/lambda/runtime/LambdaError;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun next (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun respond (Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/LambdaError {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getErrorMessage ()Ljava/lang/String;
+	public final fun getErrorType ()Ljava/lang/String;
+	public final fun getStackTrace ()Ljava/util/List;
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/LambdaMainKt {
+	public static final fun lambdaMain (Lkotlin/jvm/functions/Function0;)V
+}
+
+public abstract interface class com/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeClient : java/lang/AutoCloseable {
+	public abstract fun error (Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;Lcom/jsoizo/ktor/server/lambda/runtime/LambdaError;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun initError (Lcom/jsoizo/ktor/server/lambda/runtime/LambdaError;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun next (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun respond (Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeEngine : com/jsoizo/ktor/server/lambda/LambdaApplicationEngine {
+	public fun <init> (Lio/ktor/server/application/ApplicationEnvironment;Lio/ktor/events/Events;ZLcom/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeEngine$Configuration;Lkotlin/jvm/functions/Function0;)V
+	public fun start (Z)Lio/ktor/server/engine/ApplicationEngine;
+	public fun stop (JJ)V
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/LambdaRuntimeEngine$Configuration : com/jsoizo/ktor/server/lambda/LambdaApplicationEngine$Configuration {
+	public fun <init> ()V
+	public final fun getConcurrency ()Ljava/lang/Integer;
+	public final fun getRuntimeClient ()Lkotlin/jvm/functions/Function1;
+	public final fun setConcurrency (Ljava/lang/Integer;)V
+	public final fun setRuntimeClient (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/NextInvocation {
+	public fun <init> (Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;[B)V
+	public final fun getEvent ()[B
+	public final fun getInvocation ()Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/PlatformKt {
+	public static final fun isRunningOnLambda ()Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/runtime/RuntimeApiException : java/lang/RuntimeException {
+	public fun <init> (IZLjava/lang/String;)V
+	public final fun getFatal ()Z
+	public final fun getStatus ()I
+}
+

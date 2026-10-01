@@ -1,0 +1,132 @@
+public final class com/jsoizo/ktor/server/lambda/events/AlbCodec : com/jsoizo/ktor/server/lambda/events/LambdaHttpCodec {
+	public static final field INSTANCE Lcom/jsoizo/ktor/server/lambda/events/AlbCodec;
+	public fun decode (Lkotlinx/serialization/json/JsonObject;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lcom/jsoizo/ktor/server/lambda/events/Decoded;
+	public fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;Lcom/jsoizo/ktor/server/lambda/events/AlbState;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lkotlinx/serialization/json/JsonObject;
+	public synthetic fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;Ljava/lang/Object;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lkotlinx/serialization/json/JsonObject;
+	public fun getSource ()Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public fun getStreaming ()Lcom/jsoizo/ktor/server/lambda/events/StreamingPreludeEncoder;
+	public fun matches (Lkotlinx/serialization/json/JsonObject;)Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/AlbState {
+	public fun <init> (Z)V
+	public final fun getMultiValueHeaders ()Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/ApiGatewayV1Codec : com/jsoizo/ktor/server/lambda/events/LambdaHttpCodec {
+	public static final field INSTANCE Lcom/jsoizo/ktor/server/lambda/events/ApiGatewayV1Codec;
+	public fun decode (Lkotlinx/serialization/json/JsonObject;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lcom/jsoizo/ktor/server/lambda/events/Decoded;
+	public synthetic fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;Ljava/lang/Object;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lkotlinx/serialization/json/JsonObject;
+	public fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;Lkotlin/Unit;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lkotlinx/serialization/json/JsonObject;
+	public fun getSource ()Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public fun getStreaming ()Lcom/jsoizo/ktor/server/lambda/events/StreamingPreludeEncoder;
+	public fun matches (Lkotlinx/serialization/json/JsonObject;)Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/ApiGatewayV2Codec : com/jsoizo/ktor/server/lambda/events/LambdaHttpCodec {
+	public static final field INSTANCE Lcom/jsoizo/ktor/server/lambda/events/ApiGatewayV2Codec;
+	public fun decode (Lkotlinx/serialization/json/JsonObject;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lcom/jsoizo/ktor/server/lambda/events/Decoded;
+	public synthetic fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;Ljava/lang/Object;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lkotlinx/serialization/json/JsonObject;
+	public fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;Lkotlin/Unit;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lkotlinx/serialization/json/JsonObject;
+	public fun getSource ()Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public fun getStreaming ()Lcom/jsoizo/ktor/server/lambda/events/StreamingPreludeEncoder;
+	public fun matches (Lkotlinx/serialization/json/JsonObject;)Z
+}
+
+public abstract interface class com/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy {
+	public static final field Companion Lcom/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy$Companion;
+	public abstract fun shouldEncode (Ljava/util/List;[B)Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy$Companion {
+	public final fun getDefault ()Lcom/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy;
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/CodecConfig {
+	public fun <init> ()V
+	public fun <init> (ZLjava/lang/String;Lcom/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (ZLjava/lang/String;Lcom/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBinaryBodyPolicy ()Lcom/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy;
+	public final fun getOnWarning ()Lkotlin/jvm/functions/Function1;
+	public final fun getStripBasePath ()Ljava/lang/String;
+	public final fun getStripStage ()Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/Decoded {
+	public fun <init> (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpRequest;Ljava/lang/Object;)V
+	public final fun getRequest ()Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpRequest;
+	public final fun getState ()Ljava/lang/Object;
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/DecodedEvent {
+	public final fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;)Lkotlinx/serialization/json/JsonObject;
+	public final fun getRequest ()Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpRequest;
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/EventSource : java/lang/Enum {
+	public static final field Alb Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public static final field ApiGatewayV1 Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public static final field ApiGatewayV2 Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public static fun values ()[Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/InvalidEventException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public abstract interface class com/jsoizo/ktor/server/lambda/events/LambdaHttpCodec {
+	public abstract fun decode (Lkotlinx/serialization/json/JsonObject;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lcom/jsoizo/ktor/server/lambda/events/Decoded;
+	public abstract fun encode (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpResponse;Ljava/lang/Object;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lkotlinx/serialization/json/JsonObject;
+	public abstract fun getSource ()Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public fun getStreaming ()Lcom/jsoizo/ktor/server/lambda/events/StreamingPreludeEncoder;
+	public abstract fun matches (Lkotlinx/serialization/json/JsonObject;)Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/LambdaHttpCodec$DefaultImpls {
+	public static fun getStreaming (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpCodec;)Lcom/jsoizo/ktor/server/lambda/events/StreamingPreludeEncoder;
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/LambdaHttpCodecs {
+	public static final field INSTANCE Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpCodecs;
+	public final fun decode (Lkotlinx/serialization/json/JsonObject;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;)Lcom/jsoizo/ktor/server/lambda/events/DecodedEvent;
+	public static synthetic fun decode$default (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpCodecs;Lkotlinx/serialization/json/JsonObject;Lcom/jsoizo/ktor/server/lambda/events/CodecConfig;ILjava/lang/Object;)Lcom/jsoizo/ktor/server/lambda/events/DecodedEvent;
+	public final fun detect (Lkotlinx/serialization/json/JsonObject;)Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpCodec;
+	public final fun parse ([B)Lkotlinx/serialization/json/JsonObject;
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/LambdaHttpRequest {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;[BLjava/lang/String;Lcom/jsoizo/ktor/server/lambda/events/EventSource;ZLkotlinx/serialization/json/JsonObject;Lkotlinx/serialization/json/JsonObject;)V
+	public final fun getBody ()[B
+	public final fun getHeaders ()Ljava/util/List;
+	public final fun getHost ()Ljava/lang/String;
+	public final fun getMethod ()Ljava/lang/String;
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getPort ()Ljava/lang/Integer;
+	public final fun getRawEvent ()Lkotlinx/serialization/json/JsonObject;
+	public final fun getRawQuery ()Ljava/lang/String;
+	public final fun getRemoteAddress ()Ljava/lang/String;
+	public final fun getRequestContext ()Lkotlinx/serialization/json/JsonObject;
+	public final fun getScheme ()Ljava/lang/String;
+	public final fun getSource ()Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public final fun isFunctionUrl ()Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/LambdaHttpResponse {
+	public fun <init> (ILjava/util/List;[B)V
+	public final fun getBody ()[B
+	public final fun getHeaders ()Ljava/util/List;
+	public final fun getStatus ()I
+}
+
+public abstract interface class com/jsoizo/ktor/server/lambda/events/StreamingPreludeEncoder {
+	public abstract fun prelude (ILjava/util/List;Ljava/lang/Object;)Lkotlinx/serialization/json/JsonObject;
+}
+
+public final class com/jsoizo/ktor/server/lambda/events/UnsupportedEventException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getKind ()Ljava/lang/String;
+}
+

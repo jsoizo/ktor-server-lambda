@@ -13,3 +13,10 @@ kotlin {
         }
     }
 }
+
+mavenPublishing {
+    pom {
+        name.set("ktor-server-lambda-events")
+        description.set("Codecs between AWS Lambda HTTP events (API Gateway, Function URL, ALB) and a normalized HTTP model.")
+    }
+}

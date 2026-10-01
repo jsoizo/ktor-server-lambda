@@ -14,3 +14,10 @@ kotlin {
         }
     }
 }
+
+mavenPublishing {
+    pom {
+        name.set("ktor-server-lambda")
+        description.set("Ktor server engine that runs the pipeline once per AWS Lambda invocation.")
+    }
+}

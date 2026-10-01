@@ -15,3 +15,12 @@ kotlin {
         }
     }
 }
+
+mavenPublishing {
+    pom {
+        name.set("ktor-server-lambda-runtime")
+        description.set(
+            "AWS Lambda Runtime API client and invocation loop for the Ktor Lambda engine, for Kotlin/Native and JVM custom runtimes.",
+        )
+    }
+}
