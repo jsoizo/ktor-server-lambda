@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Superseded pull request runs are cancelled; every push to main still finishes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # x86_64 Linux hosts can build every non-Apple Kotlin/Native target, linuxArm64 included.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: corretto
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+      # setup-gradle does not cache the Kotlin/Native toolchain, which lives outside the Gradle user home.
+      # Restore and save are split so that a failing build still saves the multi-gigabyte download.
+      - id: konan
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+      - name: Build, test and lint
+        run: >-
+          ./gradlew check
+          :native-hello:bootstrapZipLinuxX64
+          :native-hello:bootstrapZipLinuxArm64
+          :jvm-runtime:installDist
+          :jvm-managed:lambdaZip
+      - if: always() && steps.konan.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.konan
+          key: ${{ steps.konan.outputs.cache-primary-key }}
+      - name: Integration test on the Lambda Runtime Interface Emulator
+        run: scripts/rie-test.sh all
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: '**/build/reports/'
