@@ -1,0 +1,21 @@
+[versions]
+# Pinned to the 2.3 line Ktor 3.6.0 uses: klibs built by a newer compiler cannot be read by older ones.
+kotlin = "2.3.21"
+ktor = "3.6.0"
+coroutines = "1.11.0"
+serialization = "1.11.0"
+aws-lambda-java-core = "1.4.0"
+crac = "1.5.0"
+
+[libraries]
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ktor-http = { module = "io.ktor:ktor-http", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+aws-lambda-java-core = { module = "com.amazonaws:aws-lambda-java-core", version.ref = "aws-lambda-java-core" }
+crac = { module = "org.crac:crac", version.ref = "crac" }
+
