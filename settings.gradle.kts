@@ -31,3 +31,7 @@ include(
 // Flat names avoid an empty intermediate `:samples` project.
 include(":native-hello")
 project(":native-hello").projectDir = file("samples/native-hello")
+include(":jvm-runtime")
+project(":jvm-runtime").projectDir = file("samples/jvm-runtime")
+include(":jvm-managed")
+project(":jvm-managed").projectDir = file("samples/jvm-managed")
