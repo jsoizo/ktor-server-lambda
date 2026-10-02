@@ -115,8 +115,10 @@ Inside a route, `call.lambda` exposes the invocation (request id, deadline, trac
 | [`samples/jvm-managed`](samples/jvm-managed) | Managed `java21` runtime (`./gradlew :jvm-managed:lambdaZip`) |
 
 `./gradlew check` runs unit tests, ktlint, detekt, ABI checks and verifies that native binaries only need libraries
-present on `provided.al2023`. `./gradlew :integration-test:integrationTest` builds every sample and runs it in the
-official Lambda base images with the Runtime Interface Emulator, through Testcontainers (Docker required).
+present on `provided.al2023`. `./gradlew :integration-test:integrationTest` builds a test app in each of the
+three packagings and runs the use cases every release must keep working (each event format, cookies, binary and large
+bodies, application errors, warm invocations) in the official Lambda base images with the Runtime Interface Emulator,
+through Testcontainers (Docker required).
 
 ## License
 

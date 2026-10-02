@@ -53,12 +53,13 @@ jobs:
           key: ${{ steps.konan.outputs.cache-primary-key }}
       - name: Integration test on the Lambda Runtime Interface Emulator
         run: ./gradlew :integration-test:integrationTest
-      # The functions deploy as arm64 by default, so also start that binary, under QEMU.
+      # The functions deploy as arm64 by default, so also start that binary, under QEMU; the use cases themselves
+      # behave the same on both architectures.
       - uses: docker/setup-qemu-action@v4
         with:
           platforms: arm64
       - name: Integration test of the arm64 bootstrap
-        run: ./gradlew :integration-test:integrationTest -Prie.arch=arm64 --tests '*nativeBootstrap*'
+        run: ./gradlew :integration-test:integrationTest -Prie.arch=arm64 --tests 'NativeFunctionTest.respondsToHttpApiEvent'
       - uses: actions/setup-node@v7
         with:
           node-version: 22

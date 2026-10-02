@@ -36,3 +36,7 @@ project(":jvm-runtime").projectDir = file("samples/jvm-runtime")
 include(":jvm-managed")
 project(":jvm-managed").projectDir = file("samples/jvm-managed")
 include(":integration-test")
+listOf("routes", "native", "jvm-runtime", "jvm-managed").forEach { name ->
+    include(":fixture-$name")
+    project(":fixture-$name").projectDir = file("integration-test/fixtures/$name")
+}

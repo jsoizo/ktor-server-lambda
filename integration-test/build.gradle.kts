@@ -3,7 +3,7 @@ plugins {
     `jvm-test-suite`
 }
 
-// The samples run in the official Lambda base images for the host's architecture, unless -Prie.arch picks
+// The fixture apps run in the official Lambda base images for the host's architecture, unless -Prie.arch picks
 // the other one (run under emulation, as CI does for arm64).
 val arch = providers.gradleProperty("rie.arch")
     .orElse(providers.systemProperty("os.arch"))
@@ -23,11 +23,11 @@ testing {
                 testTask.configure {
                     // Task paths must be plain strings: Gradle does not resolve a Provider<String> as a task path.
                     dependsOn(
-                        ":native-hello:bootstrapZip${nativeTarget.get()}",
-                        ":jvm-runtime:installDist",
-                        ":jvm-managed:lambdaZip",
+                        ":fixture-native:bootstrapZip${nativeTarget.get()}",
+                        ":fixture-jvm-runtime:installDist",
+                        ":fixture-jvm-managed:lambdaZip",
                     )
-                    systemProperty("samples.dir", layout.settingsDirectory.dir("samples").asFile.path)
+                    systemProperty("fixtures.dir", layout.projectDirectory.dir("fixtures").asFile.path)
                     systemProperty("rie.arch", arch.get())
                     // The containers are the thing under test; a cached result would skip them.
                     outputs.upToDateWhen { false }

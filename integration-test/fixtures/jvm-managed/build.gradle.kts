@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.fixtureRoutes)
     implementation(projects.ktorServerLambdaHandler)
-    // Ktor logs through SLF4J; without a binding its warnings never reach CloudWatch.
     runtimeOnly(libs.slf4j.simple)
 }

@@ -1,10 +1,5 @@
 plugins {
-    id("jvm-app")
-    application
-}
-
-application {
-    mainClass.set("MainKt")
+    id("jvm-runtime-app")
 }
 
 dependencies {
