@@ -22,11 +22,16 @@ import io.ktor.server.routing.routing
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.JsonObject
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -229,6 +234,17 @@ class LambdaApplicationEngineTest {
         val response = engine.handle(request("GET", "/"), invocation)
         assertEquals("done", response.body.decodeToString())
         assertTrue(child.await().isCancelled)
+    }
+
+    @Test
+    fun cancellationBeforeThePipelineStartsDoesNotHang() = runTest {
+        val engine = start { routing { get("/") { call.respondText("x") } } }
+        // Outside the test's own children, so that a regression fails the timeout below instead of hanging runTest.
+        val caller = backgroundScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            cancel()
+            engine.handle(request("GET", "/"), invocation)
+        }
+        withContext(Dispatchers.Default) { withTimeout(5_000) { caller.join() } }
     }
 
     @Test

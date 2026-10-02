@@ -11,6 +11,7 @@ import io.ktor.server.application.ApplicationEnvironment
 import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.engine.ApplicationEngine
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +63,7 @@ public class LambdaRuntimeEngine(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val busyWorkers = MutableStateFlow(0)
     private val pendingPolls = MutableStateFlow(emptySet<Job>())
+    private val drained = CompletableDeferred<Unit>()
     private var publishedTraceId: String? = null
 
     @Volatile
@@ -103,6 +105,10 @@ public class LambdaRuntimeEngine(
      * Stops polling, lets in-flight invocations send their result for up to [gracePeriodMillis], then cancels them.
      * `ApplicationEngine.stop()` without arguments uses Ktor's defaults (500 ms each), which leave no time to wait
      * for the cancellation to complete; `EmbeddedServer.stop()` allows more.
+     *
+     * On Kotlin/Native the wait happens earlier, on `ApplicationStopping`, and lasts up to
+     * [Configuration.shutdownGracePeriod][io.ktor.server.engine.ApplicationEngine.Configuration.shutdownGracePeriod]
+     * instead of [gracePeriodMillis], because `EmbeddedServer.stop()` destroys the application before calling this.
      */
     override fun stop(gracePeriodMillis: Long, timeoutMillis: Long) {
         // fatal() exits from inside a worker, and exit runs the shutdown hook that calls stop();
@@ -116,10 +122,17 @@ public class LambdaRuntimeEngine(
 
     private fun drain(gracePeriodMillis: Long) {
         if (exiting) return
+        // Both ApplicationStopping and stop() drain; the later one waits for the first instead of starting a second
+        // grace period, and must not return early either, since stop() cancels the workers next.
+        if (stopping) {
+            runBlocking { withTimeoutOrNull(gracePeriodMillis) { drained.await() } }
+            return
+        }
         stopping = true
         // Idle workers would otherwise accept a new invocation during the grace period and lose it on cancel.
         pendingPolls.value.forEach { it.cancel() }
         runBlocking { withTimeoutOrNull(gracePeriodMillis) { busyWorkers.first { it == 0 } } }
+        drained.complete(Unit)
     }
 
     // Any failure to reach the Runtime API is fatal, whatever its type.
@@ -128,6 +141,8 @@ public class LambdaRuntimeEngine(
         while (!stopping) {
             val poll = scope.async { client.next() }
             pendingPolls.update { it + poll }
+            // drain() may have read pendingPolls between the loop check and the registration above.
+            if (stopping) poll.cancel()
             val next = try {
                 poll.await()
             } catch (e: CancellationException) {

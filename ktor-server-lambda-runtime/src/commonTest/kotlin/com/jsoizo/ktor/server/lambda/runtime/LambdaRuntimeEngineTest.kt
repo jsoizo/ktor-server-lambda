@@ -150,6 +150,20 @@ class LambdaRuntimeEngineTest {
     }
 
     @Test
+    fun timedOutWorkerTakesNoInvocationUntilTheHandlerReturns() = runBlocking {
+        startEngine()
+        val started = currentTimeMillis()
+        // Long enough for the handler to start blocking; one cancelled before it starts would be released at once.
+        api.enqueue(FakeRuntimeApi.Event("req-block", httpEvent("/block"), deadlineEpochMillis = started + 1_000))
+        api.enqueue(FakeRuntimeApi.Event("req-next", httpEvent("/hello")))
+        val timeout = withTimeout(10_000) { api.posted.receive() }
+        val next = withTimeout(10_000) { api.posted.receive() }
+        assertEquals("req-block" to "Runtime.Timeout", timeout.requestId to timeout.errorType)
+        assertEquals("req-next" to "response", next.requestId to next.kind)
+        assertTrue(currentTimeMillis() - started >= 2_500, "Took the next invocation while the handler still blocked")
+    }
+
+    @Test
     fun backgroundWorkThatIgnoresCancellationDoesNotDelayTheResponse() = runBlocking {
         startEngine()
         val started = currentTimeMillis()

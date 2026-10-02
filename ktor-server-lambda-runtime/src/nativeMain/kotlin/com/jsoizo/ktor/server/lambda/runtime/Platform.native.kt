@@ -14,8 +14,8 @@ import platform.posix.timespec
 internal actual fun getenv(name: String): String? = platform.posix.getenv(name)?.toKString()
 
 @OptIn(ExperimentalForeignApi::class)
-// Overwrites instead of unsetting: setenv(overwrite = 1) on an existing name keeps the environ array in place,
-// so a concurrent getenv on another thread never reads a freed array.
+// Overwrites instead of unsetting: once the name exists, setenv(overwrite = 1) keeps the environ array in place,
+// so a concurrent getenv on another thread never reads a freed array. Only the first call grows the array.
 internal actual fun publishTraceId(traceId: String?) {
     setenv(TRACE_VARIABLE, traceId.orEmpty(), 1)
 }

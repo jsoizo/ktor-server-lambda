@@ -24,11 +24,13 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.completeWith
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 
 /** Socketless engine that runs the Ktor pipeline once per Lambda invocation via [handle]. */
@@ -97,6 +99,11 @@ public open class LambdaApplicationEngine(
      * not affect it. They are cancelled once the response is built, because Lambda may freeze the environment as
      * soon as it is sent; one that ignores cancellation keeps running in the background.
      *
+     * When the caller is cancelled, this function cancels the pipeline and waits for it to return before
+     * rethrowing, so a caller that stops waiting for the response can also tell when the handler has let go.
+     * A timeout around this call therefore cannot cut short a handler that blocks or ignores cancellation;
+     * report the timeout from a separate coroutine instead, as the custom runtime does.
+     *
      * @throws Throwable the application's exception when [Configuration.errorMode] is [ErrorMode.LambdaError], or
      * in any mode when the response failed after its status and headers were committed, which a socket-based engine
      * would surface by dropping the connection
@@ -119,14 +126,28 @@ public open class LambdaApplicationEngine(
             // inside it lets the response go out before they finish.
             CoroutineScope(callContext).launch {
                 supervisorScope { executed.completeWith(runCatching { pipeline.execute(call) }) }
+            }.invokeOnCompletion { cause ->
+                // A coroutine cancelled before it is dispatched never runs its body, which would leave `executed` open.
+                if (cause != null) executed.completeExceptionally(cause)
             }
-            executed.await()
+            awaitPipeline(executed, callJob)
             call.attributes.getOrNull(ApplicationErrorKey)?.let { throw it }
             call.response.failureAfterCommit?.let { throw it }
             return call.response.toLambdaResponse()
         } finally {
             forwardCancellation?.dispose()
             callJob.cancel()
+        }
+    }
+
+    private suspend fun awaitPipeline(executed: CompletableDeferred<Unit>, callJob: Job) {
+        try {
+            executed.await()
+        } catch (e: CancellationException) {
+            callJob.cancel()
+            // A handler blocking past cancellation still holds its thread; the caller needs to know when it is free.
+            withContext(NonCancellable) { executed.join() }
+            throw e
         }
     }
 
