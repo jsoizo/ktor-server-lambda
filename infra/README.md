@@ -52,18 +52,3 @@ curl "$HTTP_API_PAYLOAD10_STAGE_URL/echo/x"
 
 Use it to check whether REST APIs pass `path` decoded, how `+` in a
 query arrives, and whether HTTP API payload 1.0 puts the stage in `path`.
-
-## Deploy to Floci
-
-Not verified yet. [Floci](https://github.com/floci-io/floci) emulates AWS locally. Use `cdklocal`, and point both the general and the
-S3 endpoint at Floci; asset uploads use virtual-hosted S3 addresses.
-
-```sh
-export AWS_ENDPOINT_URL=http://localhost:4566
-export AWS_ENDPOINT_URL_S3=http://s3.localhost.floci.io:4566
-export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_REGION=us-east-1
-npx cdklocal bootstrap
-npx cdklocal deploy KtorLambdaHttpNative
-```
-
-Floci builds events itself, so their details may differ from AWS; treat AWS as the reference.
