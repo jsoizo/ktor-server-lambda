@@ -59,9 +59,12 @@ class AlbCodecTest {
     }
 
     @Test
-    fun describesOnlyStatusCodesItKnows() {
+    fun alwaysSendsAReasonPhrase() {
         val event = LambdaHttpCodecs.decode(Fixtures.parse(Fixtures.ALB_SINGLE))
-        assertEquals("299", event.encode(LambdaHttpResponse(299, emptyList(), ByteArray(0)))["statusDescription"]!!.jsonPrimitive.content)
+        assertEquals(
+            "299 Successful",
+            event.encode(LambdaHttpResponse(299, emptyList(), ByteArray(0)))["statusDescription"]!!.jsonPrimitive.content,
+        )
         assertEquals(
             "404 Not Found",
             event.encode(LambdaHttpResponse(404, emptyList(), ByteArray(0)))["statusDescription"]!!.jsonPrimitive.content,

@@ -47,8 +47,15 @@ public object ApiGatewayV1Codec : LambdaHttpCodec<Unit> {
             scheme = scheme,
             host = headers.firstValue("Host") ?: requestContext?.stringOrNull("domainName"),
             port = portFrom(headers, scheme),
-            // Payload v1 `path` never contains the stage.
-            path = normalizePath(event.requireString("path"), stage = null, applyStage = false, basePath = config.stripBasePath),
+            path = normalizePath(
+                path = event.requireString("path"),
+                stage = requestContext?.stringOrNull("stage"),
+                // REST API paths never contain the stage. HTTP API payload 1.0, which REST events lack the `version` of,
+                // likely does on a named stage, as payload 2.0 does; stripping is a no-op when it does not.
+                applyStage = config.stripStage && event.stringOrNull("version") == "1.0" &&
+                    requestContext?.stringOrNull("domainName")?.contains(".execute-api.") == true,
+                basePath = config.stripBasePath,
+            ),
             rawQuery = query.joinToString("&") { (k, v) -> "${k.encodeURLParameter()}=${v.encodeURLParameter()}" },
             headers = headers,
             body = decodeBody(event.stringOrNull("body"), event.boolean("isBase64Encoded")),

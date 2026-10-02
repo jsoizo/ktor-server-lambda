@@ -48,7 +48,10 @@ public interface StreamingPreludeEncoder<S : Any> {
 
 /** Options shared by all codecs. */
 public class CodecConfig(
-    /** Strip the stage segment that payload v2 puts at the start of `rawPath` on execute-api hosts. */
+    /**
+     * Strip a leading named-stage segment from HTTP API paths (payload 1.0 and 2.0) on execute-api hosts;
+     * REST API paths never carry it.
+     */
     public val stripStage: Boolean = true,
     /** Path prefix to strip on a segment boundary, such as a custom domain base path mapping. */
     public val stripBasePath: String? = null,

@@ -50,7 +50,10 @@ public open class LambdaApplicationEngine(
 
     /** Settings for [LambdaApplicationEngine]; connector settings inherited from Ktor are ignored. */
     public open class Configuration : ApplicationEngine.Configuration() {
-        /** Strip the stage segment that payload v2 puts at the start of `rawPath` on execute-api hosts. */
+        /**
+         * Strip a leading named-stage segment from HTTP API paths (payload 1.0 and 2.0) on execute-api hosts;
+         * REST API paths never carry it.
+         */
         public var stripStage: Boolean = true
 
         /** Path prefix to strip, such as a custom domain base path mapping. */

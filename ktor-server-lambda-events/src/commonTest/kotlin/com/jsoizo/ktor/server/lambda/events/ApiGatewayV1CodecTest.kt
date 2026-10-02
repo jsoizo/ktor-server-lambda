@@ -25,6 +25,32 @@ class ApiGatewayV1CodecTest {
     }
 
     @Test
+    fun stripsTheStageOnlyFromHttpApiPayload10Paths() {
+        fun path(
+            version: Boolean,
+            path: String,
+            config: CodecConfig = CodecConfig(),
+            stage: String = "prod",
+            domain: String = "abc.execute-api.ap-northeast-1.amazonaws.com",
+        ): String {
+            var event = Fixtures.REST_V1.replace("\"path\": \"/users/42\"", "\"path\": \"$path\"")
+                .replace("\"stage\": \"prod\"", "\"stage\": \"$stage\"")
+                .replace("\"domainName\": \"abc.execute-api.ap-northeast-1.amazonaws.com\"", "\"domainName\": \"$domain\"")
+            if (version) event = event.replace("\"resource\"", "\"version\": \"1.0\", \"resource\"")
+            return LambdaHttpCodecs.decode(Fixtures.parse(event), config).request.path
+        }
+        assertEquals("/users/42", path(version = true, "/prod/users/42"))
+        assertEquals("/", path(version = true, "/prod"))
+        assertEquals("/users/42", path(version = true, "/users/42"))
+        assertEquals("/\$default/users/42", path(version = true, "/\$default/users/42", stage = "\$default"))
+        // Custom domains map the stage away, as with payload 2.0.
+        assertEquals("/prod/users/42", path(version = true, "/prod/users/42", domain = "api.example.com"))
+        assertEquals("/prod/users/42", path(version = true, "/prod/users/42", CodecConfig(stripStage = false)))
+        // A REST API path never carries the stage, so a resource that happens to be named like it stays.
+        assertEquals("/prod/users/42", path(version = false, "/prod/users/42"))
+    }
+
+    @Test
     fun multiValueFieldsWinOverSingleValueFields() {
         assertEquals(listOf("text/html", "application/json"), request.headers.filter { it.first == "Accept" }.map { it.second })
         assertEquals(listOf("last"), request.headers.filter { it.first == "X-Single" }.map { it.second })

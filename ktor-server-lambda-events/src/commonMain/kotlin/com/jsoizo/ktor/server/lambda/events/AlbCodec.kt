@@ -102,9 +102,18 @@ public object AlbCodec : LambdaHttpCodec<AlbState> {
         }
     }
 
-    // A code Ktor does not know would otherwise read "299 Unknown Status Code" to clients.
+    // ALB requires "<code> <reason>" and answers 502 to a malformed one, so a code Ktor does not know gets the
+    // RFC 9110 name of its class rather than Ktor's "Unknown Status Code".
     private fun statusDescription(status: Int): String {
         val known = HttpStatusCode.allStatusCodes.firstOrNull { it.value == status }
-        return if (known != null) "$status ${known.description}" else "$status"
+        val reason = known?.description ?: when (status / 100) {
+            1 -> "Informational"
+            2 -> "Successful"
+            3 -> "Redirection"
+            4 -> "Client Error"
+            5 -> "Server Error"
+            else -> "Unknown"
+        }
+        return "$status $reason"
     }
 }
