@@ -34,6 +34,8 @@ import java.io.OutputStream
  * @param module the Ktor application module
  * @param configure engine settings, such as [LambdaApplicationEngine.Configuration.stripBasePath]
  */
+// Abstract so that users subclass it: the runtime instantiates the handler through a no-argument constructor.
+@Suppress("AbstractClassCanBeConcreteClass")
 public abstract class KtorRequestStreamHandler(
     module: Application.() -> Unit,
     configure: LambdaApplicationEngine.Configuration.() -> Unit = {},
