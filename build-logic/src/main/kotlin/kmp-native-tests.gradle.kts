@@ -14,7 +14,8 @@ val testSourceSets = listOf("commonTest", "nativeTest", "linuxTest", "${hostTarg
 val hasTests = testSourceSets.any { layout.projectDirectory.dir("src/$it").asFile.isDirectory }
 
 // Kotlin's test tasks only run on a Linux host; nativeContainerTest replaces them on every host.
-tasks.withType<KotlinNativeTest>().configureEach { enabled = false }
+// onlyIf, because the plugin sets `enabled` in its registration action, which runs after configureEach.
+tasks.withType<KotlinNativeTest>().configureEach { onlyIf("replaced by nativeContainerTest") { false } }
 
 kotlin {
     targets.withType<KotlinNativeTarget>().configureEach {
