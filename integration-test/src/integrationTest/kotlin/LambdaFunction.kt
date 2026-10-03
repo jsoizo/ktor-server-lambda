@@ -3,7 +3,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.images.builder.ImageFromDockerfile
 import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 import java.net.ConnectException
@@ -91,19 +90,6 @@ class LambdaFunction private constructor(
                     .withCommand("function.handler"),
                 dir,
                 PROVIDED_AL2023,
-            )
-        }
-
-        fun jvmCustomRuntime(): LambdaFunction {
-            val image = ImageFromDockerfile("ktor-server-lambda-fixture-jvm-runtime", true)
-                .withFileFromPath(".", fixtures.resolve("jvm-runtime"))
-                .withBuildImageCmdModifier { it.withPlatform("linux/$arch") }
-            // Same command as the image's ENTRYPOINT, wrapped by the emulator.
-            return LambdaFunction(
-                GenericContainer(image)
-                    .withCreateContainerCmdModifier { it.withPlatform("linux/$arch").withEntrypoint("/usr/local/bin/aws-lambda-rie") }
-                    .withCommand("java", "-cp", "/opt/app/lib/*", "MainKt")
-                    .lambda(),
             )
         }
 

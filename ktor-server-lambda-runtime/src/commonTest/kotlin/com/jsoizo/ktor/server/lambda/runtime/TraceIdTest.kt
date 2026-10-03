@@ -21,7 +21,7 @@ class TraceIdTest {
                 runtimeClient = { workers -> CioLambdaRuntimeClient(endpoint, maxConnections = workers * 2) }
             },
         ) {
-            routing { get("/") { call.respondText(System.getProperty("com.amazonaws.xray.traceHeader").orEmpty()) } }
+            routing { get("/") { call.respondText(getenv("_X_AMZN_TRACE_ID").orEmpty()) } }
         }
         try {
             server.start(wait = false)

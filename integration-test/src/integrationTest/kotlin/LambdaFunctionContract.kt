@@ -126,15 +126,6 @@ class NativeFunctionTest : LambdaFunctionContract() {
     }
 }
 
-class JvmCustomRuntimeFunctionTest : LambdaFunctionContract() {
-    override val function get() = shared
-    override val unsupportedEventError = "Runtime.UnsupportedEvent"
-
-    private companion object {
-        val shared by lazy { LambdaFunction.jvmCustomRuntime() }
-    }
-}
-
 class JvmManagedFunctionTest : LambdaFunctionContract() {
     override val function get() = shared
     override val unsupportedEventError = "UnsupportedEventException"

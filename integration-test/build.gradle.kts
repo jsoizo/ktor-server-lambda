@@ -12,7 +12,8 @@ val nativeTarget = arch.map { if (it == "arm64") "LinuxArm64" else "LinuxX64" }
 
 testing {
     suites {
-        // Needs Docker, so it is kept out of `check`; run it with `./gradlew :integration-test:integrationTest`.
+        // Builds every fixture app and starts containers, so it is kept out of `check`; run it with
+        // `./gradlew :integration-test:integrationTest`.
         register<JvmTestSuite>("integrationTest") {
             useKotlinTest(libs.versions.kotlin)
             dependencies {
@@ -24,7 +25,6 @@ testing {
                     // Task paths must be plain strings: Gradle does not resolve a Provider<String> as a task path.
                     dependsOn(
                         ":fixture-native:bootstrapZip${nativeTarget.get()}",
-                        ":fixture-jvm-runtime:installDist",
                         ":fixture-jvm-managed:lambdaZip",
                     )
                     systemProperty("fixtures.dir", layout.projectDirectory.dir("fixtures").asFile.path)

@@ -2,7 +2,7 @@ package com.jsoizo.ktor.server.lambda.runtime
 
 internal expect fun getenv(name: String): String?
 
-/** Publishes the trace id where the X-Ray SDK of the platform looks for it; `null` clears a stale one. */
+/** Publishes the trace id in `_X_AMZN_TRACE_ID`, where the X-Ray SDKs look for it; `null` clears a stale one. */
 internal expect fun publishTraceId(traceId: String?)
 
 internal expect fun currentTimeMillis(): Long

@@ -1,6 +1,7 @@
 plugins {
     id("code-quality")
     id("org.jetbrains.kotlin.multiplatform")
+    id("kmp-native-tests")
 }
 
 kotlin {

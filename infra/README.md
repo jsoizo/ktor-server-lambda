@@ -7,8 +7,7 @@ CDK stacks that deploy a sample behind every supported event source.
 | `KtorLambdaHttp<Variant>` | API Gateway REST API (stage `prod`), HTTP APIs with payload 2.0 and 1.0 (`$default` and `v1` stages), Lambda Function URL |
 | `KtorLambdaAlb<Variant>` | ALB, single-value headers on port 80 and multi-value headers on port 8080 |
 
-`<Variant>` is `Native`, `JvmManaged` or `JvmRuntime`, picked with `-c variant=native|jvm-managed|jvm-runtime`
-(default `native`).
+`<Variant>` is `Native` or `JvmManaged`, picked with `-c variant=native|jvm-managed` (default `native`).
 
 **Costs and exposure.** Every endpoint is public and unauthenticated. The API Gateway stages are throttled to 10
 requests per second, but the Function URL and the ALB are not: anyone who finds them can invoke the function as often
@@ -25,7 +24,6 @@ Build the sample first, from the repository root:
 ```sh
 ./gradlew :native-hello:bootstrapZipLinuxArm64   # variant=native
 ./gradlew :jvm-managed:lambdaZip                 # variant=jvm-managed
-./gradlew :jvm-runtime:installDist               # variant=jvm-runtime; deploying needs Docker that builds linux/arm64
 ```
 
 Then, in this directory:

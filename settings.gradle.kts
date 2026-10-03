@@ -31,12 +31,10 @@ include(
 // Flat names avoid an empty intermediate `:samples` project.
 include(":native-hello")
 project(":native-hello").projectDir = file("samples/native-hello")
-include(":jvm-runtime")
-project(":jvm-runtime").projectDir = file("samples/jvm-runtime")
 include(":jvm-managed")
 project(":jvm-managed").projectDir = file("samples/jvm-managed")
 include(":integration-test")
-listOf("routes", "native", "jvm-runtime", "jvm-managed").forEach { name ->
+listOf("routes", "native", "jvm-managed").forEach { name ->
     include(":fixture-$name")
     project(":fixture-$name").projectDir = file("integration-test/fixtures/$name")
 }

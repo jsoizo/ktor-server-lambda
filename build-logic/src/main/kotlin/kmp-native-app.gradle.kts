@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 plugins {
     id("code-quality")
     id("org.jetbrains.kotlin.multiplatform")
+    id("kmp-native-tests")
 }
 
 val al2023Libraries = listOf(

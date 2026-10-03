@@ -5,9 +5,9 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 
 /** Which sample the stacks deploy; chosen with `cdk deploy -c variant=...`. */
-export type Variant = "native" | "jvm-runtime" | "jvm-managed";
+export type Variant = "native" | "jvm-managed";
 
-export const variants: readonly Variant[] = ["native", "jvm-runtime", "jvm-managed"];
+export const variants: readonly Variant[] = ["native", "jvm-managed"];
 
 const samples = path.join(__dirname, "..", "..", "samples");
 
@@ -51,11 +51,5 @@ export function sampleFunction(
       });
       return new lambda.Alias(scope, `${id}Live`, { aliasName: "live", version: fn.currentVersion });
     }
-    case "jvm-runtime":
-      return new lambda.DockerImageFunction(scope, id, {
-        ...common,
-        memorySize: 1024,
-        code: lambda.DockerImageCode.fromImageAsset(path.join(samples, "jvm-runtime")),
-      });
   }
 }

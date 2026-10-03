@@ -42,7 +42,6 @@ jobs:
           ./gradlew check
           :native-hello:bootstrapZipLinuxX64
           :native-hello:bootstrapZipLinuxArm64
-          :jvm-runtime:installDist
           :jvm-managed:lambdaZip
       # Saved only after a successful build, so a download cut short is never cached; a later test failure
       # still keeps it, because this step runs before the integration tests.
@@ -70,10 +69,12 @@ jobs:
         run: |
           npm ci
           npx tsc --noEmit
-          for variant in native jvm-managed jvm-runtime; do npx cdk synth --quiet -c variant="$variant"; done
-      - name: Upload reports
-        if: failure()
+          for variant in native jvm-managed; do npx cdk synth --quiet -c variant="$variant"; done
+      - name: Upload test results and reports
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: reports
-          path: '**/build/reports/'
+          path: |
+            **/build/test-results/
+            **/build/reports/

@@ -20,7 +20,7 @@ Response streaming, VPC Lattice and WebSocket APIs are not supported yet.
 
 | Artifact | Platforms | Use it for |
 | --- | --- | --- |
-| `com.jsoizo:ktor-server-lambda-runtime` | JVM, linuxX64, linuxArm64 | Custom runtimes: Kotlin/Native on `provided.al2023`, or a JVM you ship yourself |
+| `com.jsoizo:ktor-server-lambda-runtime` | linuxX64, linuxArm64 | Kotlin/Native on the `provided.al2023` custom runtime |
 | `com.jsoizo:ktor-server-lambda-handler` | JVM | The managed `java21` / `java25` runtimes, with SnapStart priming |
 | `com.jsoizo:ktor-server-lambda` | JVM, linuxX64, linuxArm64 | The engine alone, for driving `handle(event)` from your own loop |
 | `com.jsoizo:ktor-server-lambda-events` | JVM, linuxX64, linuxArm64 | Converting Lambda HTTP events to and from a normalized model |
@@ -31,7 +31,7 @@ Central; until then, `./gradlew publishToMavenLocal` installs `0.1.0-SNAPSHOT` l
 
 ## Quick start
 
-### Kotlin/Native or a JVM custom runtime
+### Kotlin/Native
 
 ```kotlin
 fun main() = lambdaMain {
@@ -48,7 +48,8 @@ fun Application.module() {
 ```
 
 `lambdaMain` reports a failure during module initialization to the Runtime API before exiting. Locally the same
-module runs on CIO; use `call.lambdaOrNull` in code that runs on both, since `call.lambda` throws off Lambda.
+module runs on CIO; use `call.lambdaOrNull` in code that runs on both, since `call.lambda` throws off Lambda. The
+runtime artifact targets Linux only, so on macOS keep `module()` in common code and run it from a JVM target with CIO.
 
 For Kotlin/Native, name the executable `bootstrap` and link `libcrypt` statically, because the `provided.al2023`
 environment has no `libcrypt.so.1`:
@@ -111,14 +112,14 @@ Inside a route, `call.lambda` exposes the invocation (request id, deadline, trac
 | Sample | Shows |
 | --- | --- |
 | [`samples/native-hello`](samples/native-hello) | Kotlin/Native on `provided.al2023` (`./gradlew :native-hello:bootstrapZipLinuxArm64`) |
-| [`samples/jvm-runtime`](samples/jvm-runtime) | JVM custom runtime as a container image |
 | [`samples/jvm-managed`](samples/jvm-managed) | Managed `java21` runtime (`./gradlew :jvm-managed:lambdaZip`) |
 
 `./gradlew check` runs unit tests, ktlint, detekt, ABI checks and verifies that native binaries only need libraries
-present on `provided.al2023`. `./gradlew :integration-test:integrationTest` builds a test app in each of the
-three packagings and runs the use cases every release must keep working (each event format, cookies, binary and large
-bodies, application errors, warm invocations) in the official Lambda base images with the Runtime Interface Emulator,
-through Testcontainers (Docker required).
+present on `provided.al2023`. The Kotlin/Native unit tests run inside the `provided.al2023` image for the host's
+architecture, so `check` needs Docker. `./gradlew :integration-test:integrationTest` builds a test app for Kotlin/Native
+and for the managed Java runtime and runs the use cases every release must keep working (each event format, cookies,
+binary and large bodies, application errors, warm invocations) in the official Lambda base images with the Runtime
+Interface Emulator, through Testcontainers (Docker required).
 
 ## License
 
