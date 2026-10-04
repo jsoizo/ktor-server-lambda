@@ -1,20 +1,7 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda.codec
 
-import com.jsoizo.ktor.server.lambda.events.internal.boolean
-import com.jsoizo.ktor.server.lambda.events.internal.decodeBody
-import com.jsoizo.ktor.server.lambda.events.internal.encodeBody
-import com.jsoizo.ktor.server.lambda.events.internal.firstValue
-import com.jsoizo.ktor.server.lambda.events.internal.groupByName
-import com.jsoizo.ktor.server.lambda.events.internal.normalizePath
-import com.jsoizo.ktor.server.lambda.events.internal.objOrNull
-import com.jsoizo.ktor.server.lambda.events.internal.partitionSetCookie
-import com.jsoizo.ktor.server.lambda.events.internal.portFrom
-import com.jsoizo.ktor.server.lambda.events.internal.requireString
-import com.jsoizo.ktor.server.lambda.events.internal.sanitized
-import com.jsoizo.ktor.server.lambda.events.internal.schemeFrom
-import com.jsoizo.ktor.server.lambda.events.internal.singleValueMap
-import com.jsoizo.ktor.server.lambda.events.internal.stringList
-import com.jsoizo.ktor.server.lambda.events.internal.stringOrNull
+import com.jsoizo.ktor.server.lambda.EventSource
+import com.jsoizo.ktor.server.lambda.InvalidEventException
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -27,7 +14,7 @@ import kotlinx.serialization.json.put
  * See [HTTP API payload format](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html)
  * and [Function URL payloads](https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html).
  */
-public object ApiGatewayV2Codec : LambdaHttpCodec<Unit> {
+internal object ApiGatewayV2Codec : LambdaHttpCodec<Unit> {
     override val source: EventSource = EventSource.ApiGatewayV2
 
     private val functionUrlDomain = Regex("""^[^.]+\.lambda-url\.[^.]+\.on\.aws$""")

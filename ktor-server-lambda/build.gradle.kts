@@ -5,7 +5,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(projects.ktorServerLambdaEvents)
+            api(libs.kotlinx.serialization.json)
             api(libs.ktor.server.core)
         }
         commonTest.dependencies {
@@ -18,6 +18,8 @@ kotlin {
 mavenPublishing {
     pom {
         name.set("ktor-server-lambda")
-        description.set("Ktor server engine that runs the pipeline once per AWS Lambda invocation.")
+        description.set(
+            "Ktor server engine that runs the pipeline once per AWS Lambda invocation, with codecs for API Gateway, Function URL and ALB events.",
+        )
     }
 }

@@ -1,6 +1,6 @@
 package com.jsoizo.ktor.server.lambda
 
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest
+import com.jsoizo.ktor.server.lambda.codec.LambdaHttpRequest
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod

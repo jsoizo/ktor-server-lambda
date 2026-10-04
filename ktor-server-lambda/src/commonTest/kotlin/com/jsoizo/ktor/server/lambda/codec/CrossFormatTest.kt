@@ -1,4 +1,4 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda.codec
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

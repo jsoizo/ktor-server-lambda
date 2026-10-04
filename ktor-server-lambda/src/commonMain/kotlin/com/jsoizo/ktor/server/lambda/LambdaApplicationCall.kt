@@ -1,6 +1,6 @@
 package com.jsoizo.ktor.server.lambda
 
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest
+import com.jsoizo.ktor.server.lambda.codec.LambdaHttpRequest
 import io.ktor.server.application.Application
 import io.ktor.server.engine.BaseApplicationCall
 import kotlin.coroutines.CoroutineContext

@@ -1,4 +1,4 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda
 
 /** The event has a format this library does not handle, such as Lambda@Edge or a non-HTTP event. */
 public class UnsupportedEventException(

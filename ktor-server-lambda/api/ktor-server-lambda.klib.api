@@ -17,21 +17,42 @@ final enum class com.jsoizo.ktor.server.lambda/ErrorMode : kotlin/Enum<com.jsoiz
     final fun values(): kotlin/Array<com.jsoizo.ktor.server.lambda/ErrorMode> // com.jsoizo.ktor.server.lambda/ErrorMode.values|values#static(){}[0]
 }
 
-final class com.jsoizo.ktor.server.lambda/LambdaCallContext { // com.jsoizo.ktor.server.lambda/LambdaCallContext|null[0]
-    constructor <init>(com.jsoizo.ktor.server.lambda/LambdaInvocation, com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest) // com.jsoizo.ktor.server.lambda/LambdaCallContext.<init>|<init>(com.jsoizo.ktor.server.lambda.LambdaInvocation;com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest){}[0]
+final enum class com.jsoizo.ktor.server.lambda/EventSource : kotlin/Enum<com.jsoizo.ktor.server.lambda/EventSource> { // com.jsoizo.ktor.server.lambda/EventSource|null[0]
+    enum entry Alb // com.jsoizo.ktor.server.lambda/EventSource.Alb|null[0]
+    enum entry ApiGatewayV1 // com.jsoizo.ktor.server.lambda/EventSource.ApiGatewayV1|null[0]
+    enum entry ApiGatewayV2 // com.jsoizo.ktor.server.lambda/EventSource.ApiGatewayV2|null[0]
 
+    final val entries // com.jsoizo.ktor.server.lambda/EventSource.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.jsoizo.ktor.server.lambda/EventSource> // com.jsoizo.ktor.server.lambda/EventSource.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.jsoizo.ktor.server.lambda/EventSource // com.jsoizo.ktor.server.lambda/EventSource.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.jsoizo.ktor.server.lambda/EventSource> // com.jsoizo.ktor.server.lambda/EventSource.values|values#static(){}[0]
+}
+
+abstract fun interface com.jsoizo.ktor.server.lambda/BinaryBodyPolicy { // com.jsoizo.ktor.server.lambda/BinaryBodyPolicy|null[0]
+    abstract fun shouldEncode(kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/String>>, kotlin/ByteArray): kotlin/Boolean // com.jsoizo.ktor.server.lambda/BinaryBodyPolicy.shouldEncode|shouldEncode(kotlin.collections.List<kotlin.Pair<kotlin.String,kotlin.String>>;kotlin.ByteArray){}[0]
+
+    final object Companion { // com.jsoizo.ktor.server.lambda/BinaryBodyPolicy.Companion|null[0]
+        final val Default // com.jsoizo.ktor.server.lambda/BinaryBodyPolicy.Companion.Default|{}Default[0]
+            final fun <get-Default>(): com.jsoizo.ktor.server.lambda/BinaryBodyPolicy // com.jsoizo.ktor.server.lambda/BinaryBodyPolicy.Companion.Default.<get-Default>|<get-Default>(){}[0]
+    }
+}
+
+final class com.jsoizo.ktor.server.lambda/InvalidEventException : kotlin/RuntimeException { // com.jsoizo.ktor.server.lambda/InvalidEventException|null[0]
+    constructor <init>(kotlin/String, kotlin/Throwable? = ...) // com.jsoizo.ktor.server.lambda/InvalidEventException.<init>|<init>(kotlin.String;kotlin.Throwable?){}[0]
+}
+
+final class com.jsoizo.ktor.server.lambda/LambdaCallContext { // com.jsoizo.ktor.server.lambda/LambdaCallContext|null[0]
     final val invocation // com.jsoizo.ktor.server.lambda/LambdaCallContext.invocation|{}invocation[0]
         final fun <get-invocation>(): com.jsoizo.ktor.server.lambda/LambdaInvocation // com.jsoizo.ktor.server.lambda/LambdaCallContext.invocation.<get-invocation>|<get-invocation>(){}[0]
     final val isFunctionUrl // com.jsoizo.ktor.server.lambda/LambdaCallContext.isFunctionUrl|{}isFunctionUrl[0]
         final fun <get-isFunctionUrl>(): kotlin/Boolean // com.jsoizo.ktor.server.lambda/LambdaCallContext.isFunctionUrl.<get-isFunctionUrl>|<get-isFunctionUrl>(){}[0]
     final val rawEvent // com.jsoizo.ktor.server.lambda/LambdaCallContext.rawEvent|{}rawEvent[0]
         final fun <get-rawEvent>(): kotlinx.serialization.json/JsonObject // com.jsoizo.ktor.server.lambda/LambdaCallContext.rawEvent.<get-rawEvent>|<get-rawEvent>(){}[0]
-    final val request // com.jsoizo.ktor.server.lambda/LambdaCallContext.request|{}request[0]
-        final fun <get-request>(): com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest // com.jsoizo.ktor.server.lambda/LambdaCallContext.request.<get-request>|<get-request>(){}[0]
     final val requestContext // com.jsoizo.ktor.server.lambda/LambdaCallContext.requestContext|{}requestContext[0]
         final fun <get-requestContext>(): kotlinx.serialization.json/JsonObject? // com.jsoizo.ktor.server.lambda/LambdaCallContext.requestContext.<get-requestContext>|<get-requestContext>(){}[0]
     final val source // com.jsoizo.ktor.server.lambda/LambdaCallContext.source|{}source[0]
-        final fun <get-source>(): com.jsoizo.ktor.server.lambda.events/EventSource // com.jsoizo.ktor.server.lambda/LambdaCallContext.source.<get-source>|<get-source>(){}[0]
+        final fun <get-source>(): com.jsoizo.ktor.server.lambda/EventSource // com.jsoizo.ktor.server.lambda/LambdaCallContext.source.<get-source>|<get-source>(){}[0]
 }
 
 final class com.jsoizo.ktor.server.lambda/LambdaInvocation : kotlin.coroutines/AbstractCoroutineContextElement { // com.jsoizo.ktor.server.lambda/LambdaInvocation|null[0]
@@ -53,14 +74,20 @@ final class com.jsoizo.ktor.server.lambda/LambdaInvocation : kotlin.coroutines/A
     final object Key : kotlin.coroutines/CoroutineContext.Key<com.jsoizo.ktor.server.lambda/LambdaInvocation> // com.jsoizo.ktor.server.lambda/LambdaInvocation.Key|null[0]
 }
 
+final class com.jsoizo.ktor.server.lambda/UnsupportedEventException : kotlin/RuntimeException { // com.jsoizo.ktor.server.lambda/UnsupportedEventException|null[0]
+    constructor <init>(kotlin/String) // com.jsoizo.ktor.server.lambda/UnsupportedEventException.<init>|<init>(kotlin.String){}[0]
+
+    final val kind // com.jsoizo.ktor.server.lambda/UnsupportedEventException.kind|{}kind[0]
+        final fun <get-kind>(): kotlin/String // com.jsoizo.ktor.server.lambda/UnsupportedEventException.kind.<get-kind>|<get-kind>(){}[0]
+}
+
 open class com.jsoizo.ktor.server.lambda/LambdaApplicationEngine : io.ktor.server.engine/BaseApplicationEngine { // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine|null[0]
     constructor <init>(io.ktor.server.application/ApplicationEnvironment, io.ktor.events/Events, kotlin/Boolean, com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration, kotlin/Function0<io.ktor.server.application/Application>) // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.<init>|<init>(io.ktor.server.application.ApplicationEnvironment;io.ktor.events.Events;kotlin.Boolean;com.jsoizo.ktor.server.lambda.LambdaApplicationEngine.Configuration;kotlin.Function0<io.ktor.server.application.Application>){}[0]
 
     final val configuration // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.configuration|{}configuration[0]
         final fun <get-configuration>(): com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.configuration.<get-configuration>|<get-configuration>(){}[0]
 
-    final suspend fun handle(com.jsoizo.ktor.server.lambda.events/LambdaHttpRequest, com.jsoizo.ktor.server.lambda/LambdaInvocation): com.jsoizo.ktor.server.lambda.events/LambdaHttpResponse // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.handle|handle(com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest;com.jsoizo.ktor.server.lambda.LambdaInvocation){}[0]
-    final suspend fun handle(kotlinx.serialization.json/JsonObject, com.jsoizo.ktor.server.lambda/LambdaInvocation): kotlinx.serialization.json/JsonObject // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.handle|handle(kotlinx.serialization.json.JsonObject;com.jsoizo.ktor.server.lambda.LambdaInvocation){}[0]
+    final suspend fun handle(kotlin/ByteArray, com.jsoizo.ktor.server.lambda/LambdaInvocation): kotlin/ByteArray // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.handle|handle(kotlin.ByteArray;com.jsoizo.ktor.server.lambda.LambdaInvocation){}[0]
     open fun start(kotlin/Boolean): io.ktor.server.engine/ApplicationEngine // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.start|start(kotlin.Boolean){}[0]
     open fun stop(kotlin/Long, kotlin/Long) // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.stop|stop(kotlin.Long;kotlin.Long){}[0]
 
@@ -68,8 +95,8 @@ open class com.jsoizo.ktor.server.lambda/LambdaApplicationEngine : io.ktor.serve
         constructor <init>() // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.<init>|<init>(){}[0]
 
         final var binaryBodyPolicy // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.binaryBodyPolicy|{}binaryBodyPolicy[0]
-            final fun <get-binaryBodyPolicy>(): com.jsoizo.ktor.server.lambda.events/BinaryBodyPolicy // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.binaryBodyPolicy.<get-binaryBodyPolicy>|<get-binaryBodyPolicy>(){}[0]
-            final fun <set-binaryBodyPolicy>(com.jsoizo.ktor.server.lambda.events/BinaryBodyPolicy) // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.binaryBodyPolicy.<set-binaryBodyPolicy>|<set-binaryBodyPolicy>(com.jsoizo.ktor.server.lambda.events.BinaryBodyPolicy){}[0]
+            final fun <get-binaryBodyPolicy>(): com.jsoizo.ktor.server.lambda/BinaryBodyPolicy // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.binaryBodyPolicy.<get-binaryBodyPolicy>|<get-binaryBodyPolicy>(){}[0]
+            final fun <set-binaryBodyPolicy>(com.jsoizo.ktor.server.lambda/BinaryBodyPolicy) // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.binaryBodyPolicy.<set-binaryBodyPolicy>|<set-binaryBodyPolicy>(com.jsoizo.ktor.server.lambda.BinaryBodyPolicy){}[0]
         final var errorMode // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.errorMode|{}errorMode[0]
             final fun <get-errorMode>(): com.jsoizo.ktor.server.lambda/ErrorMode // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.errorMode.<get-errorMode>|<get-errorMode>(){}[0]
             final fun <set-errorMode>(com.jsoizo.ktor.server.lambda/ErrorMode) // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration.errorMode.<set-errorMode>|<set-errorMode>(com.jsoizo.ktor.server.lambda.ErrorMode){}[0]

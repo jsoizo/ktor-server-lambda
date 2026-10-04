@@ -5,12 +5,13 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler
 import com.jsoizo.ktor.server.lambda.AwsLambdaHandler
 import com.jsoizo.ktor.server.lambda.LambdaApplicationEngine
 import com.jsoizo.ktor.server.lambda.LambdaInvocation
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpCodecs
 import io.ktor.server.application.Application
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.crac.Core
 import org.crac.Resource
@@ -58,11 +59,10 @@ public abstract class KtorRequestStreamHandler(
     }
 
     /**
-     * @throws com.jsoizo.ktor.server.lambda.events.InvalidEventException if the input is not a JSON object
-     * @throws com.jsoizo.ktor.server.lambda.events.UnsupportedEventException if the event is not an HTTP event
+     * @throws com.jsoizo.ktor.server.lambda.InvalidEventException if the input is not a JSON object
+     * @throws com.jsoizo.ktor.server.lambda.UnsupportedEventException if the event is not an HTTP event
      */
     override fun handleRequest(input: InputStream, output: OutputStream, context: Context) {
-        val event = LambdaHttpCodecs.parse(input.readBytes())
         val invocation = LambdaInvocation(
             requestId = context.awsRequestId,
             deadlineEpochMillis = System.currentTimeMillis() + context.remainingTimeInMillis,
@@ -70,8 +70,7 @@ public abstract class KtorRequestStreamHandler(
             // Context is per invocation; the system property is shared by concurrent invocations on Managed Instances.
             traceId = context.xrayTraceId ?: System.getProperty("com.amazonaws.xray.traceHeader"),
         )
-        val response = runBlocking { server.engine.handle(event, invocation) }
-        output.write(response.toString().encodeToByteArray())
+        output.write(runBlocking { server.engine.handle(input.readBytes(), invocation) })
     }
 
     /** Sends [primingRequests], then calls [onBeforeCheckpoint]. Override that instead. */
@@ -105,8 +104,9 @@ public abstract class KtorRequestStreamHandler(
         runBlocking {
             primingRequests.forEach { request ->
                 try {
-                    val response = server.engine.handle(request.toEvent(), LambdaInvocation(requestId = "snapstart-priming"))
-                    val status = response["statusCode"]?.jsonPrimitive?.int ?: 0
+                    val payload = request.toEvent().toString().encodeToByteArray()
+                    val response = server.engine.handle(payload, LambdaInvocation(requestId = "snapstart-priming"))
+                    val status = Json.parseToJsonElement(response.decodeToString()).jsonObject["statusCode"]?.jsonPrimitive?.int ?: 0
                     if (status >= BAD_REQUEST) log.warn("Priming ${request.method} ${request.uri} answered $status")
                 } catch (e: Exception) {
                     log.warn("Priming ${request.method} ${request.uri} failed", e)

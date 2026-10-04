@@ -1,20 +1,6 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda.codec
 
-import com.jsoizo.ktor.server.lambda.events.internal.boolean
-import com.jsoizo.ktor.server.lambda.events.internal.decodeBody
-import com.jsoizo.ktor.server.lambda.events.internal.encodeBody
-import com.jsoizo.ktor.server.lambda.events.internal.firstValue
-import com.jsoizo.ktor.server.lambda.events.internal.groupByName
-import com.jsoizo.ktor.server.lambda.events.internal.has
-import com.jsoizo.ktor.server.lambda.events.internal.multiValueMap
-import com.jsoizo.ktor.server.lambda.events.internal.normalizePath
-import com.jsoizo.ktor.server.lambda.events.internal.objOrNull
-import com.jsoizo.ktor.server.lambda.events.internal.portFrom
-import com.jsoizo.ktor.server.lambda.events.internal.requireString
-import com.jsoizo.ktor.server.lambda.events.internal.sanitized
-import com.jsoizo.ktor.server.lambda.events.internal.schemeFrom
-import com.jsoizo.ktor.server.lambda.events.internal.singleValueMap
-import com.jsoizo.ktor.server.lambda.events.internal.stringOrNull
+import com.jsoizo.ktor.server.lambda.EventSource
 import io.ktor.http.encodeURLParameter
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -28,7 +14,7 @@ import kotlinx.serialization.json.put
  * See [input format](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
  * and [output format](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-output-format).
  */
-public object ApiGatewayV1Codec : LambdaHttpCodec<Unit> {
+internal object ApiGatewayV1Codec : LambdaHttpCodec<Unit> {
     override val source: EventSource = EventSource.ApiGatewayV1
 
     override fun matches(event: JsonObject): Boolean = event.has("httpMethod") && event.has("resource")

@@ -1,17 +1,15 @@
 package com.jsoizo.ktor.server.lambda
 
-import com.jsoizo.ktor.server.lambda.events.EventSource
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest
+import com.jsoizo.ktor.server.lambda.codec.LambdaHttpRequest
 import io.ktor.server.application.ApplicationCall
 import io.ktor.util.AttributeKey
 import kotlinx.serialization.json.JsonObject
 
 /** Lambda-specific information about the current call, available through [ApplicationCall.lambda]. */
-public class LambdaCallContext(
+public class LambdaCallContext internal constructor(
     /** The Runtime API invocation this call serves. */
     public val invocation: LambdaInvocation,
-    /** The request as decoded from the event. */
-    public val request: LambdaHttpRequest,
+    private val request: LambdaHttpRequest,
 ) {
     /** The service that sent the event. */
     public val source: EventSource get() = request.source

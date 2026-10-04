@@ -1,8 +1,6 @@
 package com.jsoizo.ktor.server.lambda
 
-import com.jsoizo.ktor.server.lambda.events.EventSource
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpResponse
+import com.jsoizo.ktor.server.lambda.codec.LambdaHttpRequest
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
@@ -32,7 +30,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -284,13 +284,11 @@ class LambdaApplicationEngineTest {
         val engine = start(configure = { stripBasePath = "/api" }) {
             routing { get("/items") { call.respondText("""{"ok":true}""", ContentType.Application.Json) } }
         }
-        val event = kotlinx.serialization.json.Json.parseToJsonElement(
-            """
+        val event = """
             {"version":"2.0","rawPath":"/prod/api/items","rawQueryString":"","headers":{"host":"h"},
              "requestContext":{"stage":"prod","domainName":"abc.execute-api.us-east-1.amazonaws.com","http":{"method":"GET","sourceIp":"1.2.3.4"}},"isBase64Encoded":false}
-            """,
-        ) as JsonObject
-        val json = engine.handle(event, invocation)
+        """.encodeToByteArray()
+        val json = Json.parseToJsonElement(engine.handle(event, invocation).decodeToString()).jsonObject
         assertEquals("200", json["statusCode"].toString())
         assertEquals("\"{\\\"ok\\\":true}\"", json["body"].toString())
     }

@@ -22,18 +22,15 @@ Response streaming, VPC Lattice and WebSocket APIs are not supported yet.
 | --- | --- | --- |
 | `com.jsoizo:ktor-server-lambda-runtime` | linuxX64, linuxArm64 | Kotlin/Native on the `provided.al2023` custom runtime |
 | `com.jsoizo:ktor-server-lambda-handler` | JVM | The managed `java21` / `java25` runtimes, with SnapStart priming |
-| `com.jsoizo:ktor-server-lambda` | JVM, linuxX64, linuxArm64 | The engine alone, for driving `handle(event)` from your own loop |
-| `com.jsoizo:ktor-server-lambda-events` | JVM, linuxX64, linuxArm64 | Converting Lambda HTTP events to and from a normalized model |
+| `com.jsoizo:ktor-server-lambda` | JVM, linuxX64, linuxArm64 | The engine alone, for passing event payloads to `handle(payload, invocation)` from your own loop |
 
 ```mermaid
 graph TD
   runtime["ktor-server-lambda-runtime<br/>Native: Runtime API loop"]
   handler["ktor-server-lambda-handler<br/>JVM: KtorRequestStreamHandler"]
-  engine["ktor-server-lambda<br/>engine, handle(event)"]
-  events["ktor-server-lambda-events<br/>event codec"]
+  engine["ktor-server-lambda<br/>engine, event codecs"]
   runtime --> engine
   handler --> engine
-  engine --> events
 ```
 
 Depend on just the one artifact you need; the modules below it come in transitively.
@@ -169,7 +166,7 @@ Inside a route, `call.lambda` exposes the invocation (request id, deadline, trac
 
 To build the JVM sample from the **published** snapshot instead of the modules in this checkout, run
 `./gradlew :jvm-managed:lambdaZip -PusePublishedSnapshot --refresh-dependencies`. The ZIP then contains the
-published handler, engine and events JARs. See [infra/README.md](infra/README.md) for the AWS deployment and
+published handler and engine JARs. See [infra/README.md](infra/README.md) for the AWS deployment and
 verification commands. The October 4, 2026 deployment in `ap-northeast-1` returned HTTP 200 for `/` and
 `/echo/test?q=hello%20world` through REST API, HTTP API payload 1.0/2.0, and Function URL; the published Lambda
 version reported SnapStart `OptimizationStatus: On`. Resources were left running for manual inspection; the local,

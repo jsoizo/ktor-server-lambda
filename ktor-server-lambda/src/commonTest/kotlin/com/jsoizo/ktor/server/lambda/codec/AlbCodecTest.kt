@@ -1,4 +1,4 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda.codec
 
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
