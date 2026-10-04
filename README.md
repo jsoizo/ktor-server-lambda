@@ -3,7 +3,7 @@
 A [Ktor](https://ktor.io) server engine for AWS Lambda. It runs your Ktor application once per Lambda invocation,
 without opening a socket, on Kotlin/Native (`provided.al2023`) and on the JVM.
 
-> Status: early development (`0.1.0-SNAPSHOT`). APIs may change before 1.0.
+> Status: early development (`0.1.0`). APIs may change before 1.0.
 
 ## Supported event sources
 
@@ -42,8 +42,7 @@ Requires Kotlin 2.3 or later and Ktor 3.6 or later. The JVM artifacts run on Jav
 
 ### Releases
 
-There is no stable release yet. Once a release is published, replace `<version>` below with its version and
-resolve it from Maven Central. This Gradle Kotlin DSL example is for the managed Java runtime:
+Releases are available from Maven Central. This Gradle Kotlin DSL example uses `0.1.0` for the managed Java runtime:
 
 ```kotlin
 repositories {
@@ -51,11 +50,11 @@ repositories {
 }
 
 dependencies {
-    implementation("com.jsoizo:ktor-server-lambda-handler:<version>")
+    implementation("com.jsoizo:ktor-server-lambda-handler:0.1.0")
 }
 ```
 
-For Kotlin/Native, add `com.jsoizo:ktor-server-lambda-runtime:<version>` to your native source set dependencies.
+For Kotlin/Native, add `com.jsoizo:ktor-server-lambda-runtime:0.1.0` to your native source set dependencies.
 
 ### Snapshots
 
