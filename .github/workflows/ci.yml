@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -70,6 +71,23 @@ jobs:
           npm ci
           npx tsc --noEmit
           for variant in native jvm-managed; do npx cdk synth --quiet -c variant="$variant"; done
+      # Publishing at the end reuses the outputs the checks above already built and tested.
+      # An empty version would skip publishing as silently as a release version does.
+      - id: version
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          test -n "$version"
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+      # Releases go through a separate, signed process, so a release version on main is skipped rather than failed.
+      # Forks have no credentials, so their main branches skip it too.
+      - name: Publish the snapshot to the Central Portal
+        if: >-
+          github.repository == 'jsoizo/ktor-server-lambda' && github.ref == 'refs/heads/main'
+          && endsWith(steps.version.outputs.name, '-SNAPSHOT')
+        run: ./gradlew publishToMavenCentral
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
       - name: Upload test results and reports
         if: always()
         uses: actions/upload-artifact@v7
