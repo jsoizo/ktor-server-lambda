@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.CognitoIdentity
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.LambdaLogger
 import com.jsoizo.ktor.server.lambda.ErrorMode
-import com.jsoizo.ktor.server.lambda.events.InvalidEventException
+import com.jsoizo.ktor.server.lambda.InvalidEventException
 import com.jsoizo.ktor.server.lambda.lambda
 import io.ktor.server.application.Application
 import io.ktor.server.request.receiveText

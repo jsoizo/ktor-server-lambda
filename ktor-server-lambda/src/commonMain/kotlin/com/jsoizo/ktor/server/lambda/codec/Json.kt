@@ -1,6 +1,6 @@
-package com.jsoizo.ktor.server.lambda.events.internal
+package com.jsoizo.ktor.server.lambda.codec
 
-import com.jsoizo.ktor.server.lambda.events.InvalidEventException
+import com.jsoizo.ktor.server.lambda.InvalidEventException
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull

@@ -1,4 +1,4 @@
-package com.jsoizo.ktor.server.lambda.events.internal
+package com.jsoizo.ktor.server.lambda.codec
 
 import io.ktor.http.encodeURLPath
 

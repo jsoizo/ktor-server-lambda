@@ -1,10 +1,9 @@
 package com.jsoizo.ktor.server.lambda
 
-import com.jsoizo.ktor.server.lambda.events.BinaryBodyPolicy
-import com.jsoizo.ktor.server.lambda.events.CodecConfig
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpCodecs
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpRequest
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpResponse
+import com.jsoizo.ktor.server.lambda.codec.CodecConfig
+import com.jsoizo.ktor.server.lambda.codec.LambdaHttpCodecs
+import com.jsoizo.ktor.server.lambda.codec.LambdaHttpRequest
+import com.jsoizo.ktor.server.lambda.codec.LambdaHttpResponse
 import io.ktor.events.Events
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationEnvironment
@@ -31,7 +30,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.JsonObject
 
 /** Socketless engine that runs the Ktor pipeline once per Lambda invocation via [handle]. */
 public open class LambdaApplicationEngine(
@@ -85,18 +83,9 @@ public open class LambdaApplicationEngine(
     }
 
     /**
-     * Decodes a Lambda HTTP event, runs the pipeline and returns the response in the event's format.
-     *
-     * @throws com.jsoizo.ktor.server.lambda.events.UnsupportedEventException if the event format is not supported
-     * @throws com.jsoizo.ktor.server.lambda.events.InvalidEventException if the event is malformed
-     */
-    public suspend fun handle(event: JsonObject, invocation: LambdaInvocation): JsonObject {
-        val decoded = LambdaHttpCodecs.decode(event, codecConfig)
-        return decoded.encode(handle(decoded.request, invocation))
-    }
-
-    /**
-     * Runs the pipeline for an already decoded request; use this with a codec of your own.
+     * Runs the pipeline for one invocation: takes the event payload as received from the
+     * [Runtime API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html) and returns the response payload
+     * in the format of the service that sent the event (see [EventSource]).
      *
      * Coroutines launched in the call's scope (`call.launch { }`) never delay the response, and their failures do
      * not affect it. They are cancelled once the response is built, because Lambda may freeze the environment as
@@ -107,11 +96,19 @@ public open class LambdaApplicationEngine(
      * A timeout around this call therefore cannot cut short a handler that blocks or ignores cancellation;
      * report the timeout from a separate coroutine instead, as the custom runtime does.
      *
+     * @throws InvalidEventException if [payload] is not a JSON object or the event is malformed
+     * @throws UnsupportedEventException if the event is not an HTTP event this engine handles
      * @throws Throwable the application's exception when [Configuration.errorMode] is [ErrorMode.LambdaError], or
      * in any mode when the response failed after its status and headers were committed, which a socket-based engine
      * would surface by dropping the connection
      */
-    public suspend fun handle(request: LambdaHttpRequest, invocation: LambdaInvocation): LambdaHttpResponse {
+    public suspend fun handle(payload: ByteArray, invocation: LambdaInvocation): ByteArray {
+        val decoded = LambdaHttpCodecs.decode(LambdaHttpCodecs.parse(payload), codecConfig)
+        return decoded.encode(handle(decoded.request, invocation)).toString().encodeToByteArray()
+    }
+
+    /** Runs the pipeline for an already decoded request; see the public [handle] for its behavior. */
+    internal suspend fun handle(request: LambdaHttpRequest, invocation: LambdaInvocation): LambdaHttpResponse {
         val caller = currentCoroutineContext()
         // Detached from the caller so that waiting for the response never waits for the call's coroutines;
         // the caller's cancellation is still forwarded.

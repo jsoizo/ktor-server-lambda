@@ -1,10 +1,9 @@
 package com.jsoizo.ktor.server.lambda.runtime
 
+import com.jsoizo.ktor.server.lambda.InvalidEventException
 import com.jsoizo.ktor.server.lambda.LambdaApplicationEngine
 import com.jsoizo.ktor.server.lambda.LambdaInvocation
-import com.jsoizo.ktor.server.lambda.events.InvalidEventException
-import com.jsoizo.ktor.server.lambda.events.LambdaHttpCodecs
-import com.jsoizo.ktor.server.lambda.events.UnsupportedEventException
+import com.jsoizo.ktor.server.lambda.UnsupportedEventException
 import io.ktor.events.Events
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationEnvironment
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.serialization.json.JsonObject
 import kotlin.concurrent.Volatile
 
 /**
@@ -170,7 +168,7 @@ public class LambdaRuntimeEngine(
         // A process-wide variable cannot hold per-invocation values once invocations run concurrently.
         if (publishTrace) publishTrace(invocation.traceId)
         // Detached from the worker so that a handler blocking past the deadline cannot hold back the report.
-        val work = scope.async { outcomeOf { handle(LambdaHttpCodecs.parse(next.event), invocation) } }
+        val work = scope.async { outcomeOf { handle(next.event, invocation) } }
         val outcome = try {
             awaitWithin(invocation, work)
         } catch (e: CancellationException) {
@@ -195,8 +193,8 @@ public class LambdaRuntimeEngine(
 
     // Every application failure must become an /error report so the worker keeps serving.
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun outcomeOf(block: suspend () -> JsonObject): Outcome = try {
-        Outcome.Response(block().toString().encodeToByteArray())
+    private suspend fun outcomeOf(block: suspend () -> ByteArray): Outcome = try {
+        Outcome.Response(block())
     } catch (e: UnsupportedEventException) {
         Outcome.Failure(LambdaError("Runtime.UnsupportedEvent", e.message.orEmpty()))
     } catch (e: InvalidEventException) {

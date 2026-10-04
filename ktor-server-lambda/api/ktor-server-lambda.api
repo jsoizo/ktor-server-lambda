@@ -6,6 +6,15 @@ public final class com/jsoizo/ktor/server/lambda/AwsLambdaHandler : io/ktor/serv
 	public synthetic fun create (Lio/ktor/server/application/ApplicationEnvironment;Lio/ktor/events/Events;ZLio/ktor/server/engine/ApplicationEngine$Configuration;Lkotlin/jvm/functions/Function0;)Lio/ktor/server/engine/ApplicationEngine;
 }
 
+public abstract interface class com/jsoizo/ktor/server/lambda/BinaryBodyPolicy {
+	public static final field Companion Lcom/jsoizo/ktor/server/lambda/BinaryBodyPolicy$Companion;
+	public abstract fun shouldEncode (Ljava/util/List;[B)Z
+}
+
+public final class com/jsoizo/ktor/server/lambda/BinaryBodyPolicy$Companion {
+	public final fun getDefault ()Lcom/jsoizo/ktor/server/lambda/BinaryBodyPolicy;
+}
+
 public final class com/jsoizo/ktor/server/lambda/ErrorMode : java/lang/Enum {
 	public static final field HttpResponse Lcom/jsoizo/ktor/server/lambda/ErrorMode;
 	public static final field LambdaError Lcom/jsoizo/ktor/server/lambda/ErrorMode;
@@ -14,34 +23,45 @@ public final class com/jsoizo/ktor/server/lambda/ErrorMode : java/lang/Enum {
 	public static fun values ()[Lcom/jsoizo/ktor/server/lambda/ErrorMode;
 }
 
+public final class com/jsoizo/ktor/server/lambda/EventSource : java/lang/Enum {
+	public static final field Alb Lcom/jsoizo/ktor/server/lambda/EventSource;
+	public static final field ApiGatewayV1 Lcom/jsoizo/ktor/server/lambda/EventSource;
+	public static final field ApiGatewayV2 Lcom/jsoizo/ktor/server/lambda/EventSource;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/jsoizo/ktor/server/lambda/EventSource;
+	public static fun values ()[Lcom/jsoizo/ktor/server/lambda/EventSource;
+}
+
+public final class com/jsoizo/ktor/server/lambda/InvalidEventException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
 public class com/jsoizo/ktor/server/lambda/LambdaApplicationEngine : io/ktor/server/engine/BaseApplicationEngine {
 	public fun <init> (Lio/ktor/server/application/ApplicationEnvironment;Lio/ktor/events/Events;ZLcom/jsoizo/ktor/server/lambda/LambdaApplicationEngine$Configuration;Lkotlin/jvm/functions/Function0;)V
 	public final fun getConfiguration ()Lcom/jsoizo/ktor/server/lambda/LambdaApplicationEngine$Configuration;
-	public final fun handle (Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpRequest;Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun handle (Lkotlinx/serialization/json/JsonObject;Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun handle ([BLcom/jsoizo/ktor/server/lambda/LambdaInvocation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun start (Z)Lio/ktor/server/engine/ApplicationEngine;
 	public fun stop (JJ)V
 }
 
 public class com/jsoizo/ktor/server/lambda/LambdaApplicationEngine$Configuration : io/ktor/server/engine/ApplicationEngine$Configuration {
 	public fun <init> ()V
-	public final fun getBinaryBodyPolicy ()Lcom/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy;
+	public final fun getBinaryBodyPolicy ()Lcom/jsoizo/ktor/server/lambda/BinaryBodyPolicy;
 	public final fun getErrorMode ()Lcom/jsoizo/ktor/server/lambda/ErrorMode;
 	public final fun getStripBasePath ()Ljava/lang/String;
 	public final fun getStripStage ()Z
-	public final fun setBinaryBodyPolicy (Lcom/jsoizo/ktor/server/lambda/events/BinaryBodyPolicy;)V
+	public final fun setBinaryBodyPolicy (Lcom/jsoizo/ktor/server/lambda/BinaryBodyPolicy;)V
 	public final fun setErrorMode (Lcom/jsoizo/ktor/server/lambda/ErrorMode;)V
 	public final fun setStripBasePath (Ljava/lang/String;)V
 	public final fun setStripStage (Z)V
 }
 
 public final class com/jsoizo/ktor/server/lambda/LambdaCallContext {
-	public fun <init> (Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpRequest;)V
 	public final fun getInvocation ()Lcom/jsoizo/ktor/server/lambda/LambdaInvocation;
 	public final fun getRawEvent ()Lkotlinx/serialization/json/JsonObject;
-	public final fun getRequest ()Lcom/jsoizo/ktor/server/lambda/events/LambdaHttpRequest;
 	public final fun getRequestContext ()Lkotlinx/serialization/json/JsonObject;
-	public final fun getSource ()Lcom/jsoizo/ktor/server/lambda/events/EventSource;
+	public final fun getSource ()Lcom/jsoizo/ktor/server/lambda/EventSource;
 	public final fun isFunctionUrl ()Z
 }
 
@@ -63,5 +83,10 @@ public final class com/jsoizo/ktor/server/lambda/LambdaInvocation : kotlin/corou
 }
 
 public final class com/jsoizo/ktor/server/lambda/LambdaInvocation$Key : kotlin/coroutines/CoroutineContext$Key {
+}
+
+public final class com/jsoizo/ktor/server/lambda/UnsupportedEventException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getKind ()Ljava/lang/String;
 }
 

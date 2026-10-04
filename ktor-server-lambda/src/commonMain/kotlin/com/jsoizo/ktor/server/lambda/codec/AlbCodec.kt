@@ -1,22 +1,6 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda.codec
 
-import com.jsoizo.ktor.server.lambda.events.internal.boolean
-import com.jsoizo.ktor.server.lambda.events.internal.decodeBody
-import com.jsoizo.ktor.server.lambda.events.internal.encodeBody
-import com.jsoizo.ktor.server.lambda.events.internal.firstValue
-import com.jsoizo.ktor.server.lambda.events.internal.groupByName
-import com.jsoizo.ktor.server.lambda.events.internal.has
-import com.jsoizo.ktor.server.lambda.events.internal.lastValue
-import com.jsoizo.ktor.server.lambda.events.internal.multiValueMap
-import com.jsoizo.ktor.server.lambda.events.internal.normalizePath
-import com.jsoizo.ktor.server.lambda.events.internal.objOrNull
-import com.jsoizo.ktor.server.lambda.events.internal.portFrom
-import com.jsoizo.ktor.server.lambda.events.internal.requireString
-import com.jsoizo.ktor.server.lambda.events.internal.sanitized
-import com.jsoizo.ktor.server.lambda.events.internal.schemeFrom
-import com.jsoizo.ktor.server.lambda.events.internal.singleValueMap
-import com.jsoizo.ktor.server.lambda.events.internal.splitForwardedFor
-import com.jsoizo.ktor.server.lambda.events.internal.stringOrNull
+import com.jsoizo.ktor.server.lambda.EventSource
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -25,9 +9,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /** Per-request state for [AlbCodec]: ALB rejects a response whose header format differs from the request's. */
-public class AlbState(
+internal class AlbState(
     /** `true` when the target group has `lambda.multi_value_headers.enabled`. */
-    public val multiValueHeaders: Boolean,
+    val multiValueHeaders: Boolean,
 )
 
 /**
@@ -35,7 +19,7 @@ public class AlbState(
  *
  * See [Lambda functions as targets](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html).
  */
-public object AlbCodec : LambdaHttpCodec<AlbState> {
+internal object AlbCodec : LambdaHttpCodec<AlbState> {
     override val source: EventSource = EventSource.Alb
 
     override fun matches(event: JsonObject): Boolean = event.objOrNull("requestContext")?.has("elb") == true

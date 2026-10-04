@@ -1,5 +1,6 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda.codec
 
+import com.jsoizo.ktor.server.lambda.BinaryBodyPolicy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

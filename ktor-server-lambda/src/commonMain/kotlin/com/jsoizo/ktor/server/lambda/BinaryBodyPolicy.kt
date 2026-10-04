@@ -1,4 +1,4 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda
 
 /**
  * Decides whether a response body must be base64-encoded.

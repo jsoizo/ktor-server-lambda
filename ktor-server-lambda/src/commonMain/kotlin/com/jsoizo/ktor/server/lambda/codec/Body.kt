@@ -1,6 +1,6 @@
-package com.jsoizo.ktor.server.lambda.events.internal
+package com.jsoizo.ktor.server.lambda.codec
 
-import com.jsoizo.ktor.server.lambda.events.InvalidEventException
+import com.jsoizo.ktor.server.lambda.InvalidEventException
 import kotlin.io.encoding.Base64
 
 internal fun decodeBody(body: String?, isBase64Encoded: Boolean): ByteArray = when {

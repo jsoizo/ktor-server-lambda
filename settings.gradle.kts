@@ -27,7 +27,6 @@ dependencyResolutionManagement {
 }
 
 include(
-    ":ktor-server-lambda-events",
     ":ktor-server-lambda",
     ":ktor-server-lambda-runtime",
     ":ktor-server-lambda-handler",

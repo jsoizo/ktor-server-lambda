@@ -1,5 +1,8 @@
-package com.jsoizo.ktor.server.lambda.events
+package com.jsoizo.ktor.server.lambda.codec
 
+import com.jsoizo.ktor.server.lambda.EventSource
+import com.jsoizo.ktor.server.lambda.InvalidEventException
+import com.jsoizo.ktor.server.lambda.UnsupportedEventException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
