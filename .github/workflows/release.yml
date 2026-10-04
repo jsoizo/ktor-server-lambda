@@ -41,7 +41,7 @@ jobs:
     needs: validate
     uses: ./.github/workflows/cdk.yml
 
-  publish:
+  stage:
     needs: [validate, tests, cdk]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
@@ -67,7 +67,7 @@ jobs:
         with:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ runner.arch }}-${{ steps.kotlin.outputs.version }}
-      - name: Sign and publish to Maven Central
+      - name: Sign and upload to Central Portal
         shell: bash
         run: |
           set -euo pipefail
@@ -77,9 +77,9 @@ jobs:
               exit 1
             fi
           done
-          ./gradlew publishAndReleaseToMavenCentral \
+          ./gradlew publishToMavenCentral \
             -PVERSION_NAME="$RELEASE_VERSION" \
-            -PmavenCentralDeploymentValidation=PUBLISHED \
+            -PmavenCentralAutomaticPublishing=false \
             --no-configuration-cache --no-daemon
         env:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}
