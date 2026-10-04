@@ -25,6 +25,19 @@ Response streaming, VPC Lattice and WebSocket APIs are not supported yet.
 | `com.jsoizo:ktor-server-lambda` | JVM, linuxX64, linuxArm64 | The engine alone, for driving `handle(event)` from your own loop |
 | `com.jsoizo:ktor-server-lambda-events` | JVM, linuxX64, linuxArm64 | Converting Lambda HTTP events to and from a normalized model |
 
+```mermaid
+graph TD
+  runtime["ktor-server-lambda-runtime<br/>Native: Runtime API loop"]
+  handler["ktor-server-lambda-handler<br/>JVM: KtorRequestStreamHandler"]
+  engine["ktor-server-lambda<br/>engine, handle(event)"]
+  events["ktor-server-lambda-events<br/>event codec"]
+  runtime --> engine
+  handler --> engine
+  engine --> events
+```
+
+Depend on just the one artifact you need; the modules below it come in transitively.
+
 ## Usage
 
 Requires Kotlin 2.3 or later and Ktor 3.6 or later. The JVM artifacts run on Java 17 or later, except
