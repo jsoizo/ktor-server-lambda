@@ -35,15 +35,15 @@ import kotlinx.coroutines.withContext
 public open class LambdaApplicationEngine(
     environment: ApplicationEnvironment,
     monitor: Events,
-    developmentMode: Boolean,
     /** Settings the engine was created with. */
     public val configuration: Configuration,
     private val applicationProvider: () -> Application,
 ) : BaseApplicationEngine(
     environment,
     monitor,
-    developmentMode,
-    enginePipeline(environment, developmentMode, configuration),
+    // Disable Ktor's development-mode fallback page, which includes the stack trace in the response.
+    developmentMode = false,
+    pipeline = enginePipeline(environment, configuration),
 ) {
 
     /** Settings for [LambdaApplicationEngine]; connector settings inherited from Ktor are ignored. */
@@ -156,11 +156,11 @@ public open class LambdaApplicationEngine(
 
         // LambdaError mode must capture every application failure, whatever its type.
         @Suppress("TooGenericExceptionCaught")
-        fun enginePipeline(environment: ApplicationEnvironment, developmentMode: Boolean, configuration: Configuration): EnginePipeline =
+        fun enginePipeline(environment: ApplicationEnvironment, configuration: Configuration): EnginePipeline =
             when (configuration.errorMode) {
-                ErrorMode.HttpResponse -> defaultEnginePipeline(environment.config, developmentMode)
+                ErrorMode.HttpResponse -> defaultEnginePipeline(environment.config, developmentMode = false)
 
-                ErrorMode.LambdaError -> EnginePipeline(developmentMode).apply {
+                ErrorMode.LambdaError -> EnginePipeline(developmentMode = false).apply {
                     intercept(EnginePipeline.Call) {
                         // Record instead of throwing; the EnginePipeline.Before fallback would turn the exception into a 500.
                         try {

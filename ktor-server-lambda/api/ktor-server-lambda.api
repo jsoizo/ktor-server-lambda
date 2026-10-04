@@ -38,7 +38,7 @@ public final class com/jsoizo/ktor/server/lambda/InvalidEventException : java/la
 }
 
 public class com/jsoizo/ktor/server/lambda/LambdaApplicationEngine : io/ktor/server/engine/BaseApplicationEngine {
-	public fun <init> (Lio/ktor/server/application/ApplicationEnvironment;Lio/ktor/events/Events;ZLcom/jsoizo/ktor/server/lambda/LambdaApplicationEngine$Configuration;Lkotlin/jvm/functions/Function0;)V
+	public fun <init> (Lio/ktor/server/application/ApplicationEnvironment;Lio/ktor/events/Events;Lcom/jsoizo/ktor/server/lambda/LambdaApplicationEngine$Configuration;Lkotlin/jvm/functions/Function0;)V
 	public final fun getConfiguration ()Lcom/jsoizo/ktor/server/lambda/LambdaApplicationEngine$Configuration;
 	public final fun handle ([BLcom/jsoizo/ktor/server/lambda/LambdaInvocation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun start (Z)Lio/ktor/server/engine/ApplicationEngine;

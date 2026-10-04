@@ -16,6 +16,5 @@ public object AwsLambda : ApplicationEngineFactory<LambdaRuntimeEngine, LambdaRu
         developmentMode: Boolean,
         configuration: LambdaRuntimeEngine.Configuration,
         applicationProvider: () -> Application,
-    ): LambdaRuntimeEngine = // Development mode would answer errors with an HTML page containing the stack trace.
-        LambdaRuntimeEngine(environment, monitor, developmentMode = false, configuration, applicationProvider)
+    ): LambdaRuntimeEngine = LambdaRuntimeEngine(environment, monitor, configuration, applicationProvider)
 }

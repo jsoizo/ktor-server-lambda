@@ -35,10 +35,9 @@ import kotlin.concurrent.Volatile
 public class LambdaRuntimeEngine(
     environment: ApplicationEnvironment,
     monitor: Events,
-    developmentMode: Boolean,
     configuration: Configuration,
     applicationProvider: () -> Application,
-) : LambdaApplicationEngine(environment, monitor, developmentMode, configuration, applicationProvider) {
+) : LambdaApplicationEngine(environment, monitor, configuration, applicationProvider) {
 
     /** Settings for [LambdaRuntimeEngine]. */
     public class Configuration : LambdaApplicationEngine.Configuration() {
