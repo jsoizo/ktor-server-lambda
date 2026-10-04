@@ -1,0 +1,94 @@
+name: Tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # x86_64 Linux hosts can build every non-Apple Kotlin/Native target, linuxArm64 included.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: corretto
+          java-version: 21
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      # setup-gradle does not cache the Kotlin/Native toolchain, which lives outside the Gradle user home.
+      # Keyed by the Kotlin version alone, since only that changes the toolchain.
+      - id: kotlin
+        name: Read Kotlin version
+        run: echo "version=$(sed -n 's/^kotlin = "\(.*\)"/\1/p' gradle/libs.versions.toml)" >> "$GITHUB_OUTPUT"
+      - id: konan
+        name: Restore Kotlin/Native toolchain
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ steps.kotlin.outputs.version }}
+      - name: Test build logic
+        run: ./gradlew -p build-logic test
+      - id: check
+        name: Build, test and lint
+        run: ./gradlew check
+      # Saved only after successful checks, so an interrupted toolchain download is never cached.
+      - name: Save Kotlin/Native toolchain
+        if: steps.konan.outputs.cache-hit != 'true' && steps.check.outcome == 'success'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.konan
+          key: ${{ steps.konan.outputs.cache-primary-key }}
+      - name: Upload test results and reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: |
+            **/build/test-results/
+            **/build/reports/
+
+  integration-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: corretto
+          java-version: 21
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - id: kotlin
+        name: Read Kotlin version
+        run: echo "version=$(sed -n 's/^kotlin = "\(.*\)"/\1/p' gradle/libs.versions.toml)" >> "$GITHUB_OUTPUT"
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ steps.kotlin.outputs.version }}
+      - name: Integration test on the Lambda Runtime Interface Emulator
+        run: ./gradlew :integration-test:integrationTest
+      # The functions deploy as arm64 by default, so also start that binary under QEMU. The use cases themselves
+      # behave the same on both architectures.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+      - name: Integration test of the arm64 bootstrap
+        run: ./gradlew :integration-test:integrationTest -Prie.arch=arm64 --tests 'NativeFunctionTest.respondsToHttpApiEvent'
+      - name: Upload integration test results and reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: integration-test-reports
+          path: |
+            **/build/test-results/
+            **/build/reports/

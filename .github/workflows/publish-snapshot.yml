@@ -1,0 +1,49 @@
+name: Publish snapshot
+
+on:
+  workflow_call:
+    secrets:
+      maven-central-username:
+        required: true
+      maven-central-password:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: corretto
+          java-version: 21
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - id: kotlin
+        name: Read Kotlin version
+        run: echo "version=$(sed -n 's/^kotlin = "\(.*\)"/\1/p' gradle/libs.versions.toml)" >> "$GITHUB_OUTPUT"
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ steps.kotlin.outputs.version }}
+      # An empty version would skip publishing as silently as a release version does.
+      - id: version
+        name: Read project version
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          test -n "$version"
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+      # Releases go through a separate, signed process, so a release version on main is skipped rather than failed.
+      - name: Publish to the Central Portal
+        if: endsWith(steps.version.outputs.name, '-SNAPSHOT')
+        run: ./gradlew publishToMavenCentral
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.maven-central-username }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.maven-central-password }}
