@@ -25,9 +25,49 @@ Response streaming, VPC Lattice and WebSocket APIs are not supported yet.
 | `com.jsoizo:ktor-server-lambda` | JVM, linuxX64, linuxArm64 | The engine alone, for driving `handle(event)` from your own loop |
 | `com.jsoizo:ktor-server-lambda-events` | JVM, linuxX64, linuxArm64 | Converting Lambda HTTP events to and from a normalized model |
 
+## Usage
+
 Requires Kotlin 2.3 or later and Ktor 3.6 or later. The JVM artifacts run on Java 17 or later, except
-`ktor-server-lambda-handler`, which targets the managed `java21` and `java25` runtimes. Not yet published to Maven
-Central; until then, `./gradlew publishToMavenLocal` installs `0.1.0-SNAPSHOT` locally.
+`ktor-server-lambda-handler`, which targets the managed `java21` and `java25` runtimes.
+
+### Releases
+
+There is no stable release yet. Once a release is published, replace `<version>` below with its version and
+resolve it from Maven Central. This Gradle Kotlin DSL example is for the managed Java runtime:
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.jsoizo:ktor-server-lambda-handler:<version>")
+}
+```
+
+For Kotlin/Native, add `com.jsoizo:ktor-server-lambda-runtime:<version>` to your native source set dependencies.
+
+### Snapshots
+
+Snapshot artifacts are published to the Central Portal snapshot repository. To use the current development
+version, add that repository and depend on `0.1.0-SNAPSHOT`:
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven("https://central.sonatype.com/repository/maven-snapshots/") {
+        mavenContent { snapshotsOnly() }
+    }
+}
+
+dependencies {
+    implementation("com.jsoizo:ktor-server-lambda-handler:0.1.0-SNAPSHOT")
+}
+```
+
+For Kotlin/Native, use `com.jsoizo:ktor-server-lambda-runtime:0.1.0-SNAPSHOT` in your native source set dependencies.
+Use `--refresh-dependencies` to fetch a newly published snapshot. Alternatively, `./gradlew publishToMavenLocal`
+installs the current source locally; add `mavenLocal()` to the consuming project's repositories to use it.
 
 ## Quick start
 
@@ -113,6 +153,14 @@ Inside a route, `call.lambda` exposes the invocation (request id, deadline, trac
 | --- | --- |
 | [`samples/native-hello`](samples/native-hello) | Kotlin/Native on `provided.al2023` (`./gradlew :native-hello:bootstrapZipLinuxArm64`) |
 | [`samples/jvm-managed`](samples/jvm-managed) | Managed `java21` runtime (`./gradlew :jvm-managed:lambdaZip`) |
+
+To build the JVM sample from the **published** snapshot instead of the modules in this checkout, run
+`./gradlew :jvm-managed:lambdaZip -PusePublishedSnapshot --refresh-dependencies`. The ZIP then contains the
+published handler, engine and events JARs. See [infra/README.md](infra/README.md) for the AWS deployment and
+verification commands. The October 4, 2026 deployment in `ap-northeast-1` returned HTTP 200 for `/` and
+`/echo/test?q=hello%20world` through REST API, HTTP API payload 1.0/2.0, and Function URL; the published Lambda
+version reported SnapStart `OptimizationStatus: On`. Resources were left running for manual inspection; the local,
+git-ignored `.work/deployment-resources.md` records their identifiers and URLs.
 
 `./gradlew check` runs unit tests, ktlint, detekt, ABI checks and verifies that native binaries only need libraries
 present on `provided.al2023`. The Kotlin/Native unit tests run inside the `provided.al2023` image for the host's

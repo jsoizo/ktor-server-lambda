@@ -24,13 +24,14 @@ Build the sample first, from the repository root:
 ```sh
 ./gradlew :native-hello:bootstrapZipLinuxArm64   # variant=native
 ./gradlew :jvm-managed:lambdaZip                 # variant=jvm-managed
+./gradlew :jvm-managed:lambdaZip -PusePublishedSnapshot --refresh-dependencies # published snapshot instead of local projects
 ```
 
 Then, in this directory:
 
 ```sh
 npm ci
-npx cdk bootstrap                                      # once per account and region
+npx cdk bootstrap -c variant=jvm-managed               # once per account and region; variant must have a built ZIP
 npx cdk deploy KtorLambdaHttpNative
 npx cdk deploy KtorLambdaAlbNative                     # optional, billed while it exists
 npx cdk deploy KtorLambdaHttpJvmManaged -c variant=jvm-managed
@@ -38,6 +39,20 @@ npx cdk deploy KtorLambdaHttpJvmManaged -c variant=jvm-managed
 npx cdk destroy KtorLambdaAlbNative KtorLambdaHttpNative
 npx cdk destroy KtorLambdaHttpJvmManaged -c variant=jvm-managed
 ```
+
+For a snapshot smoke test without the hourly ALB cost, deploy only `KtorLambdaHttpJvmManaged` with
+`-c variant=jvm-managed`. Check each output URL with `curl -i "$URL"` (expect `{"message":"hello",...}`)
+and `curl -i "${URL}echo/test?q=hello%20world"` (expect `segments: ["test"]` and query value
+`"hello world"`). Check the published Lambda version, not `$LATEST`, for SnapStart:
+
+```sh
+aws lambda get-function-configuration --function-name FUNCTION_NAME --qualifier VERSION \
+  --query 'SnapStart'
+```
+
+The verified AWS deployment on October 4, 2026 used the published `0.1.0-SNAPSHOT` JVM artifacts. Its resources
+remain deployed for inspection; their account-specific identifiers and public URLs are in the local,
+git-ignored `../.work/deployment-resources.md`. Public endpoints can incur charges until the stack is destroyed.
 
 ## Check how event sources encode requests
 
