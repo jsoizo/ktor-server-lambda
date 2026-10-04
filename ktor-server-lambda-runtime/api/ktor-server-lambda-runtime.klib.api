@@ -35,7 +35,7 @@ final class com.jsoizo.ktor.server.lambda.runtime/LambdaError { // com.jsoizo.kt
 }
 
 final class com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine : com.jsoizo.ktor.server.lambda/LambdaApplicationEngine { // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine|null[0]
-    constructor <init>(io.ktor.server.application/ApplicationEnvironment, io.ktor.events/Events, kotlin/Boolean, com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration, kotlin/Function0<io.ktor.server.application/Application>) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.<init>|<init>(io.ktor.server.application.ApplicationEnvironment;io.ktor.events.Events;kotlin.Boolean;com.jsoizo.ktor.server.lambda.runtime.LambdaRuntimeEngine.Configuration;kotlin.Function0<io.ktor.server.application.Application>){}[0]
+    constructor <init>(io.ktor.server.application/ApplicationEnvironment, io.ktor.events/Events, com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.Configuration, kotlin/Function0<io.ktor.server.application/Application>) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.<init>|<init>(io.ktor.server.application.ApplicationEnvironment;io.ktor.events.Events;com.jsoizo.ktor.server.lambda.runtime.LambdaRuntimeEngine.Configuration;kotlin.Function0<io.ktor.server.application.Application>){}[0]
 
     final fun start(kotlin/Boolean): io.ktor.server.engine/ApplicationEngine // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.start|start(kotlin.Boolean){}[0]
     final fun stop(kotlin/Long, kotlin/Long) // com.jsoizo.ktor.server.lambda.runtime/LambdaRuntimeEngine.stop|stop(kotlin.Long;kotlin.Long){}[0]

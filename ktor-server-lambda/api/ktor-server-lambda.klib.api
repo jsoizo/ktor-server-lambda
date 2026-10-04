@@ -82,7 +82,7 @@ final class com.jsoizo.ktor.server.lambda/UnsupportedEventException : kotlin/Run
 }
 
 open class com.jsoizo.ktor.server.lambda/LambdaApplicationEngine : io.ktor.server.engine/BaseApplicationEngine { // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine|null[0]
-    constructor <init>(io.ktor.server.application/ApplicationEnvironment, io.ktor.events/Events, kotlin/Boolean, com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration, kotlin/Function0<io.ktor.server.application/Application>) // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.<init>|<init>(io.ktor.server.application.ApplicationEnvironment;io.ktor.events.Events;kotlin.Boolean;com.jsoizo.ktor.server.lambda.LambdaApplicationEngine.Configuration;kotlin.Function0<io.ktor.server.application.Application>){}[0]
+    constructor <init>(io.ktor.server.application/ApplicationEnvironment, io.ktor.events/Events, com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration, kotlin/Function0<io.ktor.server.application/Application>) // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.<init>|<init>(io.ktor.server.application.ApplicationEnvironment;io.ktor.events.Events;com.jsoizo.ktor.server.lambda.LambdaApplicationEngine.Configuration;kotlin.Function0<io.ktor.server.application.Application>){}[0]
 
     final val configuration // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.configuration|{}configuration[0]
         final fun <get-configuration>(): com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.Configuration // com.jsoizo.ktor.server.lambda/LambdaApplicationEngine.configuration.<get-configuration>|<get-configuration>(){}[0]
