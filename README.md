@@ -179,10 +179,6 @@ and for the managed Java runtime and runs the use cases every release must keep 
 binary and large bodies, application errors, warm invocations) in the official Lambda base images with the Runtime
 Interface Emulator, through Testcontainers (Docker required).
 
-## Releasing
-
-Maintainers: see [Publishing a release](docs/releasing.md) for Maven Central credentials and release tags.
-
 ## License
 
 [MIT](LICENSE)
