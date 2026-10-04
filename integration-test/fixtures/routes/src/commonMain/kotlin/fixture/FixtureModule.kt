@@ -10,6 +10,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import io.ktor.server.util.getOrFail
 import io.ktor.utils.io.writeFully
 
 /** The routes the integration tests call in every packaging of the engine. */
@@ -28,7 +29,7 @@ fun Application.fixtureModule() {
         }
         // Streams through a channel, the path that once deadlocked on bodies over 1 MiB.
         get("/large") {
-            val size = call.request.queryParameters["size"]!!.toInt()
+            val size = call.request.queryParameters.getOrFail<Int>("size")
             val chunk = ByteArray(CHUNK_SIZE) { 'x'.code.toByte() }
             call.respondBytesWriter(ContentType.Text.Plain) {
                 var left = size

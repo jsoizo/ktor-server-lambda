@@ -26,6 +26,12 @@ detekt {
     config.setFrom(layout.settingsDirectory.file("config/detekt/detekt.yml"))
 }
 
+// Rules that need type resolution, such as UnsafeCallOnNullableType, run only for JVM main compilations, so
+// native-only code goes unchecked by them. Tests are left out, where `!!` is an acceptable assertion.
+tasks.named("check") {
+    dependsOn(tasks.withType<Detekt>().named { it == "detektMain" || it == "detektMainJvm" })
+}
+
 // On multiplatform projects the plain `detekt` task (run by `check`) analyses nothing; the per source set tasks do the work.
 // JVM projects are left alone because their `detekt` task already covers the main sources.
 pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {

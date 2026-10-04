@@ -33,6 +33,8 @@ public enum class EventSource {
  * Cookies always arrive in the `Cookie` header, even when the event carried them separately
  * (payload v2 `cookies`).
  */
+// One parameter per field the event formats carry; grouping them would only add types to the public API.
+@Suppress("LongParameterList")
 public class LambdaHttpRequest(
     /** HTTP method, such as `GET`. */
     public val method: String,
